@@ -11,6 +11,11 @@ using std::ios;
 namespace bptree {
     /*
      *  Cache size must be at least 4 times than the DEPTH in order to ensure work correctly.
+     *  Usage:
+     *   search(K): search specified key and return std::pair<KeyType,bool>. Not found if pair->second is False.
+     *   insert(K, V): insert a pair of data
+     *   remove(K): remove the pair with the specified key
+     *   range(K_low, K_high): get a range of data subject to K_low <= key <= K_high
      */
 
 
@@ -44,14 +49,6 @@ namespace bptree {
         DiskLoc_T freelist_head;
     public:
         LRUBPTree(const std::string& path, size_t block_size, bool create= false);
-
-//        LRUBPTree()=default;
-//
-//        void open(const std::string& path,std::size_t block_size,bool create= false){
-//            if(create)
-//                createTree(path);
-//            file.open(path.c_str());
-//        }
 
         ~LRUBPTree();
     };

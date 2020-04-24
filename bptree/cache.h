@@ -43,6 +43,10 @@ namespace cache{
         func_load_t<DiskLoc_T,T> f_load;
         func_expire_t<DiskLoc_T,T> f_expire;
     public:
+        /*
+         * load function is used to read a structure from offset(DiskLoc_T) in disk to space(T*) in memory
+         * expire function is used to write a structure to offset(DiskLoc_T) in disk from space(T*) in memory
+         */
         LRUCache(size_t block_count, func_load_t<DiskLoc_T,T> load_func, func_expire_t<DiskLoc_T,T> expire_func)
                 : count(block_count), freelist_head(1), f_load(load_func), f_expire(expire_func) {
             pool = new Block[count+1];
@@ -97,10 +101,8 @@ namespace cache{
                 if(!remove(pool[pool[LIST_END].prev].where))
                     throw std::logic_error("Cache:remove failed");
             auto tmp=pool[freelist_head].next;
-            /*
-             * set block the head
-             * pool[freelist_head] will be assigned
-             */
+             // set block the head
+             // pool[freelist_head] will be assigned
             pool[pool[LIST_END].next].prev = freelist_head;
             pool[freelist_head].prev = LIST_END;
             pool[freelist_head].next = pool[LIST_END].next;
@@ -113,8 +115,11 @@ namespace cache{
             freelist_head=tmp;
             return &pool[pool[LIST_END].next].data;
         }
-
-        void dirty_bit_set(DiskLoc_T offset){ pool[table[offset]].dirty_page_bit= true;}
+        // must be called manually after write
+        // or you will lose your write !!!
+        void dirty_bit_set(DiskLoc_T offset){
+            pool[table[offset]].dirty_page_bit= true;
+        }
         void destruct(){
             for (size_t index = pool[LIST_END].next; index != LIST_END; index = pool[index].next) {
                 if(pool[index].dirty_page_bit)

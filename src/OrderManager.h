@@ -9,7 +9,7 @@
 #include <cstring>
 #include <iostream>
 #include "structure.h"
-#include "../include/cache.h"
+#include "../bptree/cache.h"
 using std::ios;
 namespace t_sys{
     /*
@@ -29,6 +29,7 @@ namespace t_sys{
         std::fstream file;
         DiskLoc_T file_size;
         DiskLoc_T extend(const order* record,DiskLoc_T where){
+            // construct buffer
             char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
             char* buf=buffer;
             int size=(record!= nullptr);
@@ -39,6 +40,7 @@ namespace t_sys{
                 write_attribute(*record);
             }
 #undef write_attribute
+            // write buffer
             file.seekp(file_size);
             file.write(buffer, sizeof(buffer));
             where=file_size;
@@ -91,6 +93,7 @@ namespace t_sys{
         explicit OrderManager(const std::string& file_path, bool create_flag= false){
             if(create_flag)initialize(file_path);
             file.open(file_path);
+            // read metadata
             char buf[sizeof(file_size)];
             char* ptr = buf;
             file.seekg(0);

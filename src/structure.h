@@ -23,6 +23,7 @@ namespace t_sys{
         DiskLoc_T orderOffset;
     };
 
+    /*
     struct train{
         DiskLoc_T offset;
         int stationNum;     // n
@@ -47,6 +48,7 @@ namespace t_sys{
             delete stations;
         }
     };
+     */
 
     struct order{
         enum STATUS{SUCCESS, PENDING, REFUNDED};

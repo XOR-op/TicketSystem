@@ -9,8 +9,8 @@
 #include <iostream>
 #include "structure.h"
 #include "OrderManager.h"
-#include "../include/cache.h"
-#include "../include/LRUBPtree.h"
+#include "../bptree/cache.h"
+#include "../bptree/LRUBPtree.h"
 using std::endl;
 namespace t_sys{
     class UserManager{
@@ -139,6 +139,7 @@ namespace t_sys{
                     return false;
                 }
             } else privilege=10;
+            // construct
             user usr{};
             strcpy(usr.username.name,u->name);
             strcpy(usr.password,passwd);
@@ -146,6 +147,7 @@ namespace t_sys{
             strcpy(usr.mailAddr,mailaddr);
             usr.privilege=privilege;
             usr.orderOffset=ord_manager->createRecord();
+            // write back
             DiskLoc_T off=increaseFile(&usr);
             usernameToOffset.insert(*u,off);
             defaultOut<<"0"<<endl;
@@ -158,6 +160,7 @@ namespace t_sys{
                     {
             if(create_flag)create(file_path);
             userFile.open(file_path);
+            // metadata
             char buf[sizeof(file_size)];
             char* ptr = buf;
             userFile.seekg(0);
@@ -168,6 +171,7 @@ namespace t_sys{
         }
 
         ~UserManager(){
+            // write metadata
             char buf[sizeof(file_size)];
             char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
