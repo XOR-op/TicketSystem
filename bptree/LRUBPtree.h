@@ -48,7 +48,7 @@ namespace bptree {
         size_t file_size;
         DiskLoc_T freelist_head;
     public:
-        LRUBPTree(const std::string& path, size_t block_size, bool create= false);
+        LRUBPTree(const std::string& path, size_t block_size, bool create= false,const WeakCmp& cmp=WeakCmp());
 
         ~LRUBPTree();
     };
@@ -114,7 +114,7 @@ namespace bptree {
     void LRUBPTree<KeyType,ValueType,WeakCmp>::deleteNode(NodePtr node) {
         node->type = Node<KeyType,ValueType>::FREE;
         node->next = freelist_head;
-        auto tmp = node->next;
+        auto tmp = node->offset;
         saveNode(node);
         cache.remove(node->offset);
         freelist_head = tmp;
@@ -135,7 +135,6 @@ namespace bptree {
         write_attribute(size);
         write_attribute(free);
         write_attribute(t); // root
-        write_attribute(t); // sequential_head
         f.write(buf, sizeof(buf));
         f.close();
         return true;
@@ -145,8 +144,8 @@ namespace bptree {
 
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    LRUBPTree<KeyType,ValueType,WeakCmp>::LRUBPTree(const std::string& path, size_t block_size, bool create) :
-            BPTree<KeyType,ValueType,WeakCmp>(),
+    LRUBPTree<KeyType,ValueType,WeakCmp>::LRUBPTree(const std::string& path, size_t block_size, bool create,const WeakCmp& cmp) :
+            BPTree<KeyType,ValueType,WeakCmp>(cmp),
             cache(block_size, [this](DiskLoc_T o, NodePtr r) { load(file, o, r); }, [this](DiskLoc_T o,ConstNodePtr r) { flush(file, r); }) {
         if(create)
             createTree(path);
