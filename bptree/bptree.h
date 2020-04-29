@@ -5,7 +5,6 @@
 #include <memory>
 #include <cstring>
 #include <algorithm>
-#include "analysis.h"
 
 using std::tie;
 using std::lower_bound;

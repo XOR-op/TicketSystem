@@ -3,4 +3,4 @@ project(TicketSystem)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(TicketSystem UserManager_test.cpp src/structure.h src/UserManager.h src/OrderManager.h bptree/MmapBPtree.h src/PageManager.h src/global.h)
+add_executable(TicketSystem src/structure.h src/UserManager.h src/OrderManager.h bptree/MmapBPtree.h src/PageManager.h src/global.h test_cpp/PageManager.cpp)
