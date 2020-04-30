@@ -24,7 +24,7 @@ namespace t_sys {
         const static int PAGE_CNT = 256;
         cache::LRUCache<DiskLoc_T, Page> cache;
         size_t file_size;
-        FILE* fd;
+        FILE* file;
         static DiskLoc_T page_offset(DiskLoc_T offset) {
             return offset-offset%PAGE_SIZE;
         }
@@ -39,12 +39,6 @@ namespace t_sys {
     public:
         void read(char* dst, DiskLoc_T offset, size_t size);
         void write(const char* src, DiskLoc_T offset, size_t size);
-        /*
-         * This function MUST BE CALLED before any WRITE, or undefined behavior will happen
-         */
-        void setSize(size_t size) {
-            file_size = size;
-        }
         explicit PageManager(const std::string& path);
         ~PageManager();
     };
@@ -56,8 +50,9 @@ namespace t_sys {
         if (size <= first_size) {
             memcpy(dst, ptr+offset-p_offset, size);
         } else {
+            // read many pages
             memcpy(dst, ptr+offset-p_offset, first_size);
-            for (dst += first_size, size -= first_size, p_offset += first_size;
+            for (dst += first_size, size -= first_size, p_offset += PAGE_SIZE;
                  size >= PAGE_SIZE; dst += PAGE_SIZE, size -= PAGE_SIZE, p_offset += PAGE_SIZE) {
                 ptr = (char*) cache.get(p_offset);
                 memcpy(dst, ptr, PAGE_SIZE);
@@ -70,10 +65,11 @@ namespace t_sys {
     }
     void PageManager::write(const char* src, DiskLoc_T offset, size_t size) {
         if (offset+size >= file_size) {
+            // pseudo ftruncate()
             file_size = page_offset(offset+size)+PAGE_SIZE;
             char null_char = '\0';
-            fseek(fd, file_size, SEEK_SET);
-            fwrite(&null_char, 1, 1, fd);
+            fseek(file, file_size, SEEK_SET);
+            fwrite(&null_char, 1, 1, file);
         }
         DiskLoc_T p_offset = page_offset(offset);
         char* ptr = (char*) cache.get(p_offset);
@@ -82,8 +78,9 @@ namespace t_sys {
         if (size <= first_size) {
             memcpy(ptr+offset-p_offset, src, size);
         } else {
+            // write many pages
             memcpy(ptr+offset-p_offset, src, first_size);
-            for (src += first_size, size -= first_size, p_offset += first_size;
+            for (src += first_size, size -= first_size, p_offset += PAGE_SIZE;
                  size >= PAGE_SIZE; src += PAGE_SIZE, size -= PAGE_SIZE, p_offset += PAGE_SIZE) {
                 ptr = (char*) cache.get(p_offset);
                 cache.dirty_bit_set(p_offset);
@@ -100,17 +97,19 @@ namespace t_sys {
     }
     PageManager::PageManager(const std::string& path) : cache(PAGE_CNT,
                                                               [this](DiskLoc_T offset, Page* p) {
-                                                                  readPage(this->fd, offset, p);
+                                                                  readPage(this->file, offset, p);
                                                               },
                                                               [this](DiskLoc_T offset, const Page* p) {
-                                                                  writePage(this->fd, offset, p);
+                                                                  writePage(this->file, offset, p);
                                                               }) {
-        file_size = PAGE_SIZE;
-        fd = fopen(path.c_str(), "rb+");
+        file = fopen(path.c_str(), "rb+");
+        fseek(file, 0, SEEK_END);
+        file_size=ftell(file);
+        rewind(file);
     }
     PageManager::~PageManager() {
         cache.destruct();
-        fclose(fd);
+        fclose(file);
     }
 
 }
