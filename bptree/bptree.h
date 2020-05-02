@@ -483,7 +483,7 @@ namespace bptree {
     }
 
     template<typename KeyType, typename ValueType, typename WeakCmp>
-    std::vector<std::pair<KeyType, ValueType>> BPTree<KeyType, ValueType, WeakCmp>::range(KeyType low, KeyType high) {
+    sjtu::vector<std::pair<KeyType, ValueType>> BPTree<KeyType, ValueType, WeakCmp>::range(KeyType low, KeyType high) {
         /*
          * low <= key <= high
          */
