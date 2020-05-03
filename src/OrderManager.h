@@ -9,8 +9,8 @@
 #include <cstring>
 #include <iostream>
 #include "structure.h"
-#include "../bptree/cache.h"
-#include "PageManager.h"
+#include "../basic_component//cache.h"
+#include "../basic_component/PageManager.h"
 
 using std::ios;
 namespace t_sys {

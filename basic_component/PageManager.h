@@ -8,8 +8,8 @@
 #include <memory>
 #include <cstring>
 #include <cstdio>
-#include "../bptree/cache.h"
-#include "global.h"
+#include "cache.h"
+#include "../src/global.h"
 
 using std::size_t;
 namespace t_sys {

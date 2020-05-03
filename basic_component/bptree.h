@@ -5,6 +5,7 @@
 #include <memory>
 #include <cstring>
 #include <algorithm>
+#include "vector.hpp"
 
 using std::tie;
 using std::lower_bound;
@@ -147,7 +148,7 @@ namespace bptree {
         /*
          * range: low <= key < high
          */
-        std::vector<std::pair<KeyType, ValueType>> range(KeyType low, KeyType high);
+        pse_std::vector<std::pair<KeyType, ValueType>> range(KeyType low, KeyType high);
 
         ~BPTree() = default;
     };
@@ -483,7 +484,7 @@ namespace bptree {
     }
 
     template<typename KeyType, typename ValueType, typename WeakCmp>
-    sjtu::vector<std::pair<KeyType, ValueType>> BPTree<KeyType, ValueType, WeakCmp>::range(KeyType low, KeyType high) {
+    pse_std::vector<std::pair<KeyType, ValueType>> BPTree<KeyType, ValueType, WeakCmp>::range(KeyType low, KeyType high) {
         /*
          * low <= key <= high
          */
