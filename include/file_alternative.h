@@ -24,6 +24,8 @@ namespace ds{
         bool fail()const { return false;}
         void open(const char* str){
             file=fopen(str,"r+b");
+            if(!file)
+                throw std::runtime_error("File_alternative open failed, errno"+std::to_string(errno));
             setbuf(file, nullptr);
         }
     };

@@ -78,6 +78,7 @@ namespace t_sys{
         char trainID[21];
         char from[41];
         char to[41];
+
     };
 
 }
