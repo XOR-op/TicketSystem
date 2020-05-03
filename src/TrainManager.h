@@ -188,7 +188,7 @@ namespace t_sys {
         TrainManager(const std::string& file_path,const std::string& trainid_index_path,bool create_flag=false)
             :cache(51,[this](DiskLoc_T off,train* tra){loadTrain(trainFile,off,tra);},
                     [this](DiskLoc_T off,const train* tra){saveTrain(trainFile,off,tra);}),
-             trainidToOffset(trainid_index_path,107,create_flag),head(NULL),defaultOut(std::cout)//! I don't know 51 && 107
+             trainidToOffset(trainid_index_path,107,create_flag),head(NULL),defaultOut(std::cout)
             {
                 if(create_flag)create(file_path);
                 trainFile.open(file_path);
