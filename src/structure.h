@@ -9,11 +9,13 @@
 #include <cstring>
 namespace t_sys{
     typedef uint64_t DiskLoc_T;
+
     struct username_t{
         char name[21];
         bool operator<(const username_t& rhs)const { return strcmp(name,rhs.name)<0;}
         bool operator==(const username_t& rhs)const {return !strcmp(name,rhs.name);}
     };
+
     struct user{
         username_t username;
         char password[31];
@@ -22,6 +24,7 @@ namespace t_sys{
         int privilege;
         DiskLoc_T orderOffset;
     };
+
     struct trainID_t{
         char ID[21];
         trainID_t(){
@@ -34,6 +37,7 @@ namespace t_sys{
         bool operator==(const trainID_t& rhs)const {return !strcmp(ID,rhs.ID);}
         bool operator!=(const trainID_t& rhs)const {return strcmp(ID,rhs.ID)!=0;}
     };
+
     struct train{
         DiskLoc_T offset;
         trainID_t trainID;
