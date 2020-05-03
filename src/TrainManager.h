@@ -95,6 +95,10 @@ namespace t_sys {
         bool Add_train(const trainID_t& t, int stationNUM, int seatNUM, char** stations,
                     const int* prices, int startTime, const int* travelTimes, const int* stopoverTimes, int saleDate, char type){
             // construct
+            if(findtrainID(t)){
+                defaultOut<<"-1"<<endl;
+                return false;
+            }
             train tra{};
             strcpy(tra.trainID.ID,t.ID);
             tra.stationNum=stationNUM;
