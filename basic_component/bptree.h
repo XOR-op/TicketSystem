@@ -5,7 +5,7 @@
 #include <memory>
 #include <cstring>
 #include <algorithm>
-#include "vector.hpp"
+#include "../include/vector.hpp"
 
 using std::tie;
 using std::lower_bound;

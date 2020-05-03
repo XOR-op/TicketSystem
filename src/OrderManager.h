@@ -77,6 +77,7 @@ namespace t_sys {
          * called by UserManager and not directly called by logic codes
          */
         void printAllOrders(std::ostream& ofs, DiskLoc_T head);
+        bool refundOrder(DiskLoc_T head,int n);
         explicit OrderManager(const std::string& file_path, bool create_flag = false);
         ~OrderManager();
     };

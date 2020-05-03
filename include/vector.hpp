@@ -4,6 +4,7 @@
 
 #include <climits>
 #include <cstddef>
+#include <stdexcept>
 
 namespace pse_std {
     template<typename T>

@@ -9,8 +9,8 @@
 #include <iostream>
 #include "structure.h"
 #include "OrderManager.h"
-#include "../bptree/cache.h"
-#include "../bptree/LRUBPtree.h"
+#include "../basic_component/cache.h"
+#include "../basic_component/LRUBPtree.h"
 using std::endl;
 namespace t_sys{
     class UserManager{

@@ -30,7 +30,7 @@ namespace t_sys{
         trainID_t(){
             ID[0]='\0';
         }
-        trainID_t(const char* id){
+        explicit trainID_t(const char* id){
             strcpy(ID,id);
         }
         bool operator<(const trainID_t& rhs)const { return strcmp(ID,rhs.ID)<0;}
@@ -66,19 +66,19 @@ namespace t_sys{
                 delete stations[i];
             delete stations;
         }*/
-    };//because wtl is naive, so the arrays are fixed length.
+    };// because wtl is naive, the arrays are fixed length.
 
     struct order{
         enum STATUS{SUCCESS, PENDING, REFUNDED};
+        static const int NONE_TIME=0;
         STATUS stat;
-        int leaveTime;
+        int leaveTime;  // mmddhhmm e.g. 7311245 means 07-30 12:45
         int arriveTime;
         int price;
         int num;
         char trainID[21];
         char from[41];
         char to[41];
-
     };
 
 }

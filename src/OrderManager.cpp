@@ -28,19 +28,37 @@ DiskLoc_T OrderManager::appendRecord(DiskLoc_T where, const order* record) {
 DiskLoc_T OrderManager::createRecord() {
     return extend(nullptr, NO_NEXT);
 }
-
+static const char* express(char* buf,int what){
+    if(what==order::NONE_TIME){
+        strcpy(buf,"xx-xx xx:xx");
+    } else {
+        buf[0] = '0'+(what/10000000)%10;
+        buf[1] = '0'+(what/10000000)%10;
+        buf[2] = '-';
+        buf[3] = '0'+(what/10000000)%10;
+        buf[4] = '0'+(what/10000000)%10;
+        buf[5] = ' ';
+        buf[6] = '0'+(what/10000000)%10;
+        buf[7] = '0'+(what/10000000)%10;
+        buf[8] = ':';
+        buf[9] = '0'+(what/10000000)%10;
+        buf[10] = '0'+(what/10000000)%10;
+        buf[11] = '\0';
+    }
+    return buf;
+}
 void OrderManager::printAllOrders(std::ostream& ofs,DiskLoc_T head){
     order buf[count];
+    char str_buf[15];
     while (head!=NO_NEXT) {
         int size = getRecord(&head, buf);
         for(int i=size-1;i>=0;--i){
             auto& ref=buf[i];
             ofs<<(ref.stat==order::SUCCESS?"[success]":(ref.stat==order::PENDING?"[pending]":"[refunded]"))
-               <<' '<<ref.trainID<<' '<<ref.from<<' '<<
-               // todo design output format
+               <<' '<<ref.trainID<<' '<<ref.from<<' '<<express(str_buf,ref.leaveTime)<<" -> "<<ref.to
+               <<' '<<express(str_buf,ref.arriveTime)<<' '<<ref.price<<' '<<ref.num<<std::endl;
         }
     }
-
 }
 
 OrderManager::OrderManager(const std::string& file_path, bool create_flag):file(file_path) {
@@ -61,5 +79,23 @@ OrderManager::~OrderManager() {
     write_attribute(file_size);
 #undef write_attribute
     file.write(buf,0, sizeof(buf));
+}
+bool OrderManager::refundOrder(DiskLoc_T head, int n) {
+    order buf[count];
+    int cnt=0;
+    while (head!=NO_NEXT){
+        int sz=getRecord(&head,buf);
+        if(cnt+sz>=n){
+            // have found
+            auto& ref=buf[sz-n+cnt];
+            if(ref.stat!=order::REFUNDED){
+                order::STATUS stat=order::REFUNDED;
+                file.write((char*)&stat,head+sizeof(order)*(sz-n+cnt),sizeof(stat));
+                return true;
+            } else return false;
+        }
+        cnt+=sz;
+    }
+    return false;
 }
 
