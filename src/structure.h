@@ -22,23 +22,38 @@ namespace t_sys{
         int privilege;
         DiskLoc_T orderOffset;
     };
-
-    /*
+    struct trainID_t{
+        char ID[21];
+        trainID_t(){
+            ID[0]='\0';
+        }
+        trainID_t(const char* id){
+            strcpy(ID,id);
+        }
+        bool operator<(const trainID_t& rhs)const { return strcmp(ID,rhs.ID)<0;}
+        bool operator==(const trainID_t& rhs)const {return !strcmp(ID,rhs.ID);}
+        bool operator!=(const trainID_t& rhs)const {return strcmp(ID,rhs.ID)!=0;}
+    };
     struct train{
         DiskLoc_T offset;
+        trainID_t trainID;
         int stationNum;     // n
         int seatNum;
         int startTime;
-        int saleDate;
-        bool releaseStat;
+        int saleDate; //mmddmmdd
+        bool releaseState;
         char type;
-        char trainID[21];
-        char** stations;    // n
-        int* prices;        // n-1
-        int* travelTimes;   // n-1
-        int* stopoverTimes; // n-2
-        int* stationTicketRemains;  // n
-        void release(){
+        //char** stations;    // n
+        //int* prices;        // n-1
+        //int* travelTimes;   // n-1
+        //int* stopoverTimes; // n-2
+        //int* stationTicketRemains;  // n-1
+        char stations[101][21];
+        int prices[101];
+        int travelTimes[101];
+        int stopoverTimes[101];
+        int stationTicketRemains[101];
+        /*void release(){
             delete prices;
             delete travelTimes;
             delete stopoverTimes;
@@ -46,9 +61,8 @@ namespace t_sys{
             for(int i=0;i<stationNum;++i)
                 delete stations[i];
             delete stations;
-        }
-    };
-     */
+        }*/
+    };//because wtl is naive, so the arrays are fixed length.
 
     struct order{
         enum STATUS{SUCCESS, PENDING, REFUNDED};
