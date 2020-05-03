@@ -60,6 +60,8 @@ PageManager::PageManager(const std::string& path) : cache(PAGE_CNT,
                                                               writePage(this->file, offset, p);
                                                           }) {
     file = fopen(path.c_str(), "rb+");
+    if(!file)
+        throw std::runtime_error("PageManager open failed, errno:"+std::to_string(errno));
     fseek(file, 0, SEEK_END);
     file_size=ftell(file);
     rewind(file);

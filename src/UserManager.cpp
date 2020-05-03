@@ -110,6 +110,8 @@ UserManager::UserManager(const std::string& file_path,const std::string& usernam
 {
     if(create_flag)create(file_path);
     userFile.open(file_path);
+    if(userFile.bad())
+        throw std::runtime_error("UserManger:file_path can't open");
     // metadata
     char buf[sizeof(file_size)];
     char* ptr = buf;
