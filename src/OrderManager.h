@@ -53,15 +53,6 @@ namespace t_sys {
             return where;
         }
 
-        void initialize() {
-            char buf[sizeof(DiskLoc_T)];
-            char* ptr = buf;
-            DiskLoc_T sz = sizeof(DiskLoc_T);
-#define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
-            write_attribute(sz);
-#undef write_attribute
-            file.write(buf, 0, sizeof(buf));
-        }
     public:
         /*
          * ptr should be guaranteed to be big enough
@@ -78,8 +69,14 @@ namespace t_sys {
          */
         void printAllOrders(std::ostream& ofs, DiskLoc_T head);
         bool refundOrder(DiskLoc_T head,int n);
-        explicit OrderManager(const std::string& file_path, bool create_flag = false);
+        explicit OrderManager(const std::string& file_path);
         ~OrderManager();
+        static void Init(const std::string& path) {
+            std::fstream file(path,ios::binary|ios::out);
+            DiskLoc_T sz = sizeof(DiskLoc_T);
+            file.write((char*)&sz, sizeof(sz));
+            file.close();
+        }
     };
 }
 #endif //TICKETSYSTEM_ORDERMANAGER_H

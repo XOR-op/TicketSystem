@@ -61,8 +61,7 @@ void OrderManager::printAllOrders(std::ostream& ofs,DiskLoc_T head){
     }
 }
 
-OrderManager::OrderManager(const std::string& file_path, bool create_flag):file(file_path) {
-    if (create_flag)initialize();
+OrderManager::OrderManager(const std::string& file_path):file(file_path) {
     // read metadata
     char buf[sizeof(file_size)];
     char* ptr = buf;

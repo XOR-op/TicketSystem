@@ -38,17 +38,6 @@ namespace t_sys{
             return rt;
         }
 
-        void create(const std::string& path){
-            std::fstream f(path,ios::out|ios::binary);
-            char buf[sizeof(DiskLoc_T)];
-            char* ptr = buf;
-            DiskLoc_T sz=sizeof(DiskLoc_T);
-#define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
-            write_attribute(sz);
-#undef write_attribute
-            f.write(buf,sizeof(buf));
-            f.close();
-        }
     public:
         bool isOnline(const username_t& user) const;
         int getPrivilege(const username_t& user);
@@ -60,8 +49,19 @@ namespace t_sys{
                             const char* n_passed,const char* n_name,const char* n_mail,const int* n_privilege);
         bool Add_user(OrderManager* ord_manager, const username_t* cur_user, const username_t* u,
                       const char* passwd, const char* name, const char* mailaddr, int privilege);
-        UserManager(const std::string& file_path,const std::string& username_index_path,bool create_flag=false);
+        UserManager(const std::string& file_path,const std::string& username_index_path);
         ~UserManager();
+        static void Init(const std::string& path,const std::string& username_index_path){
+            std::fstream f(path,ios::out|ios::binary);
+            char buf[sizeof(DiskLoc_T)];
+            char* ptr = buf;
+            DiskLoc_T sz=sizeof(DiskLoc_T);
+#define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
+            write_attribute(sz);
+#undef write_attribute
+            f.write(buf,sizeof(buf));
+            f.close();
+        }
     };
 }
 #endif //TICKETSYSTEM_USERMANAGER_H

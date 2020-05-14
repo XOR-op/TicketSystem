@@ -34,7 +34,6 @@ namespace t_sys {
 
         DiskLoc_T increaseFile(train* tra);
 
-        void create(const std::string& path);
     public:
         int findtrainID(const trainID_t& t){
             auto rt=trainidToOffset.search(t);
@@ -67,9 +66,11 @@ namespace t_sys {
 
         bool Query_train(const trainID_t& t,int date);//date = mmdd
 
-        TrainManager(const std::string& file_path,const std::string& trainid_index_path,bool create_flag=false);
+        TrainManager(const std::string& file_path,const std::string& trainid_index_path);
 
         ~TrainManager();
+
+        static void Init(const std::string& path);
     };
 
 }

@@ -41,14 +41,15 @@ namespace bptree {
 
         void deleteNode(NodePtr node) override;
 
-        bool createTree(const std::string& path);
 
 //        std::fstream file;
         ds::File file;
         size_t file_size;
         DiskLoc_T freelist_head;
     public:
-        LRUBPTree(const std::string& path, size_t block_size, bool create= false,const WeakCmp& cmp=WeakCmp());
+        LRUBPTree(const std::string& path, size_t block_size,const WeakCmp& cmp=WeakCmp());
+
+        static void Init(const std::string& path);
 
         ~LRUBPTree();
     };
@@ -121,11 +122,8 @@ namespace bptree {
     }
 
     template <typename KeyType,typename ValueType,typename WeakCmp>
-    bool LRUBPTree<KeyType,ValueType,WeakCmp>::createTree(const std::string& path) {
-        std::fstream f(path, ios::in | ios::out | ios::binary);
-        if (f.is_open() || f.bad()) { return false; }
-        f.close();
-        f = std::fstream(path, ios::out | ios::binary);
+    void LRUBPTree<KeyType,ValueType,WeakCmp>::Init(const std::string& path) {
+        std::fstream f(path, ios::out | ios::binary);
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
         char buf[sizeof(LRUBPTree<KeyType,ValueType>::file_size)+sizeof(LRUBPTree<KeyType,ValueType>::freelist_head)+sizeof(LRUBPTree<KeyType,ValueType>::root)];
         char* ptr = buf;
@@ -137,18 +135,15 @@ namespace bptree {
         write_attribute(t); // root
         f.write(buf, sizeof(buf));
         f.close();
-        return true;
 #undef write_attribute
     }
 
 
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    LRUBPTree<KeyType,ValueType,WeakCmp>::LRUBPTree(const std::string& path, size_t block_size, bool create,const WeakCmp& cmp) :
+    LRUBPTree<KeyType,ValueType,WeakCmp>::LRUBPTree(const std::string& path, size_t block_size, const WeakCmp& cmp) :
             BPTree<KeyType,ValueType,WeakCmp>(cmp),
             cache(block_size, [this](DiskLoc_T o, NodePtr r) { load(file, o, r); }, [this](DiskLoc_T o,ConstNodePtr r) { flush(file, r); }) {
-        if(create)
-            createTree(path);
         file.open(path.c_str());
         char buf[sizeof(file_size)+sizeof(freelist_head)+sizeof(this->root)];
         char* ptr = buf;

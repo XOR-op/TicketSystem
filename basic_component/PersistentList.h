@@ -4,7 +4,10 @@
 
 #ifndef TICKETSYSTEM_PERSISTENTLIST_H
 #define TICKETSYSTEM_PERSISTENTLIST_H
+
+#include <fstream>
 #include "PageManager.h"
+using std::ios;
 namespace t_sys{
     const DiskLoc_T NIL=0;
     template<typename T>
@@ -27,6 +30,7 @@ namespace t_sys{
         void push_back(const T& val){insert(tail,val);}
         DiskLoc_T remove(DiskLoc_T node);
         Iterator& remove(Iterator& iter);
+        static void Init(const std::string& path);
     };
 
     template<typename T>
@@ -152,6 +156,17 @@ namespace t_sys{
         auto nxt=remove(iter.self);
         read(iter,nxt);
         return iter;
+    }
+    template<typename T>
+    void PersistentList<T>::Init(const std::string& path) {
+        std::fstream f(path,ios::out|ios::binary);
+        DiskLoc_T cur=0;
+        auto wt=[&f,&cur](void* ptr, size_t sz){f.write((char*)ptr,sz);cur+=sz;};
+        wt(sizeof(std::size_t)+3*sizeof(DiskLoc_T), sizeof(file_size));
+        wt(NIL, sizeof(head));
+        wt(NIL, sizeof(tail));
+        wt(NIL,sizeof(freelist_head));
+        f.close();
     }
 }
 #endif //TICKETSYSTEM_PERSISTENTLIST_H

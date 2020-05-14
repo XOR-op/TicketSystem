@@ -103,12 +103,11 @@ bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user
     defaultOut<<"0"<<endl;
     return true;
 }
-UserManager::UserManager(const std::string& file_path,const std::string& username_index_path,bool create_flag)
+UserManager::UserManager(const std::string& file_path,const std::string& username_index_path)
         :cache(51,[this](DiskLoc_T off,user* usr){loadUser(userFile,off,usr);},
                [this](DiskLoc_T off,const user* usr){saveUser(userFile,off,usr);}),
-         usernameToOffset(username_index_path,107,create_flag),defaultOut(std::cout)
+         usernameToOffset(username_index_path,107),defaultOut(std::cout)
 {
-    if(create_flag)create(file_path);
     userFile.open(file_path);
     if(userFile.bad())
         throw std::runtime_error("UserManger:file_path can't open");

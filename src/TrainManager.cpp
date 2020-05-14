@@ -18,7 +18,7 @@ DiskLoc_T TrainManager::increaseFile(train* tra){
     }
 }
 
-void TrainManager::create(const std::string& path){
+void TrainManager::Init(const std::string& path){
     std::fstream f(path,ios::out|ios::binary);
     char buf[sizeof(DiskLoc_T)];
     char* ptr = buf;
@@ -138,12 +138,11 @@ bool TrainManager::Query_train(const trainID_t& t,int date){//date = mmdd
     }
     return true;
 }
-TrainManager::TrainManager(const std::string& file_path,const std::string& trainid_index_path,bool create_flag)
+TrainManager::TrainManager(const std::string& file_path,const std::string& trainid_index_path)
         :cache(51,[this](DiskLoc_T off,train* tra){loadTrain(trainFile,off,tra);},
                [this](DiskLoc_T off,const train* tra){saveTrain(trainFile,off,tra);}),
-         trainidToOffset(trainid_index_path,107,create_flag),head(NULL),defaultOut(std::cout)
+         trainidToOffset(trainid_index_path,107),head(NULL),defaultOut(std::cout)
 {
-    if(create_flag)create(file_path);
     trainFile.open(file_path);
     //metadata
     char buf[sizeof(file_size)];
