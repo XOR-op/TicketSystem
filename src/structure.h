@@ -7,9 +7,9 @@
 
 #include <cstdint>
 #include <cstring>
+#include "../include/unordered_map.h"
 namespace t_sys{
     typedef uint64_t DiskLoc_T;
-
     struct username_t{
         char name[21];
         bool operator<(const username_t& rhs)const { return strcmp(name,rhs.name)<0;}
@@ -38,6 +38,19 @@ namespace t_sys{
         bool operator!=(const trainID_t& rhs)const {return strcmp(ID,rhs.ID)!=0;}
     };
 
+    struct station_t{
+        char st[21];
+        station_t(){
+            st[0]='\0';
+        }
+        explicit station_t(const char* s){
+            strcpy(st,s);
+        }
+        bool operator<(const station_t& rhs)const { return strcmp(st,rhs.st)<0;}
+        bool operator==(const station_t& rhs)const {return !strcmp(st,rhs.st);}
+        bool operator!=(const station_t& rhs)const {return strcmp(st,rhs.st)!=0;}
+    };
+
     struct train{
         DiskLoc_T offset;
         trainID_t trainID;
@@ -56,7 +69,9 @@ namespace t_sys{
         int prices[101];
         int travelTimes[101];
         int stopoverTimes[101];
-        int stationTicketRemains[101];
+        //release时，travelTimes[]、stopoverTimes[] 将会做一个前缀和，也就是变成每个站的离开时间和到达时间
+        //形式为dddmmss,ddd是天没有月的概念，始发站为0
+        int stationTicketRemains[101][101];
         /*void release(){
             delete prices;
             delete travelTimes;
@@ -66,7 +81,7 @@ namespace t_sys{
                 delete stations[i];
             delete stations;
         }*/
-    };// because wtl is naive, the arrays are fixed length.
+    };
 
     struct order{
         enum STATUS{SUCCESS, PENDING, REFUNDED};
