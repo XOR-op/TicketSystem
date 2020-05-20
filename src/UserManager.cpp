@@ -84,7 +84,7 @@ bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user
     if(cur_user){
 
         int cur_pri=getPrivilege(*cur_user);
-        if(cur_pri==-1||cur_pri<privilege){
+        if(cur_pri==-1||cur_pri<=privilege){
             defaultOut<<"-1"<<endl;
             return false;
         }
