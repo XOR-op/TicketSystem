@@ -103,11 +103,11 @@ bool TrainManager::Release_train(const trainID_t& t){
         return false;
     }
     ptr->releaseState=true;
-    trainlist[trainnum]=ptr->trainID;
+    trainlist.push_back(ptr->trainID);
     for(int i=0;i<ptr->stationNum;i++){
-        if(stationlist[ptr->stations[i]]==0)stationlist[ptr->stations[i]]=++stationnum;
-        //std::cout<<stationlist["B"]<<endl;
-        stationTotrain.insert(stationlist[ptr->stations[i]]*10000+trainnum,i);
+        if(stationlist.find(station_t(ptr->stations[i]))==stationlist.end())stationlist[station_t(ptr->stations[i])]=++stationnum;
+        //std::cout<<i<<' '<<stationlist[station_t(ptr->stations[1])]<<endl;
+        stationTotrain.insert(stationlist[station_t(ptr->stations[i])]*10000+trainnum,i);
     }
     trainnum++;
     int date=0,tim=ptr->startTime;
@@ -126,7 +126,7 @@ bool TrainManager::Release_train(const trainID_t& t){
     defaultOut<<"0"<<endl;
     return true;
 }
-bool TrainManager::Query_train(const trainID_t& t,int date){//date = mdd
+bool TrainManager::Query_train(const trainID_t& t,int date){//date = mmdd
     if(!findtrainID(t)){
         defaultOut<<"-1"<<endl;
         return false;
@@ -160,10 +160,9 @@ bool TrainManager::Query_train(const trainID_t& t,int date){//date = mdd
 }
 void TrainManager::Query_ticket(char* Sstation,char* Tstation,int date,int order)
 {
-    std::cout<<stationlist["B"]<<endl;
-    std::vector<std::pair<long long,int>>S=stationTotrain.range(stationlist[Sstation]*10000LL,stationlist[Sstation]*10000LL+9999);
-    std::vector<std::pair<long long,int>>T=stationTotrain.range(stationlist[Tstation]*10000LL,stationlist[Tstation]*10000LL+9999);
-    pse_std::vector<std::pair<DiskLoc_T ,std::pair<int,int>>>Ans;
+    std::vector<std::pair<long long,int>>S=stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,stationlist[station_t(Sstation)]*10000LL+9999);
+    std::vector<std::pair<long long,int>>T=stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,stationlist[station_t(Tstation)]*10000LL+9999);
+    pse_std::vector<std::pair<int,std::pair<int,int>>>Ans;
     int ansnum=0;
     for(int i=0,j=0;i<S.size()&&j<T.size();){
         if(S[i].first%10000<T[j].first%10000)i++;
@@ -184,7 +183,12 @@ void TrainManager::Query_ticket(char* Sstation,char* Tstation,int date,int order
                     }else{
                         key=ptr->prices[T[i].second]-ptr->prices[S[i].second];
                     }
-                    Ans[ansnum++]=std::make_pair(loc,std::make_pair(S[i].second*100+T[i].second,key));
+                    std::pair<int,std::pair<int,int>>Element;
+                    Element.first=(int)(S[i].first%10000);
+                    Element.second.first=S[i].second*100+T[i].second;
+                    Element.second.second=key;
+                    ansnum++;
+                    Ans.push_back(Element);
                 }
             }
             i++,j++;
@@ -198,8 +202,11 @@ void TrainManager::Query_ticket(char* Sstation,char* Tstation,int date,int order
     std::sort(s,s+ansnum,cmp);
     //defaultOut
     for(int i=0;i<ansnum;i++){
-        auto* ptr=cache.get(Ans[i].first);
-        int s=Ans[i].second.first/100,t=Ans[i].second.second%100;
+        int p=s[i];
+        trainID_t tra=trainlist[Ans[p].first];
+        DiskLoc_T loc=trainidToOffset.search(tra).first;
+        auto* ptr=cache.get(loc);
+        int s=Ans[p].second.first/100,t=Ans[p].second.first%100;
         int days=ptr->stopoverTimes[s]/10000;
         int startday=calcstartday(date,days);
         int start=(ptr->saleDate)/10000;
@@ -213,8 +220,8 @@ void TrainManager::Query_ticket(char* Sstation,char* Tstation,int date,int order
         addtime(tdate,tmp,24*60*(ptr->travelTimes[t]/10000-ptr->stopoverTimes[s]/10000));
         printdate(tdate);
         defaultOut<<' ';
-        printtime(ptr->travelTimes[s]%10000);
-        defaultOut<<(ptr->prices[t]-ptr->prices[s])<<' ';
+        printtime(ptr->travelTimes[t]%10000);
+        defaultOut<<' '<<(ptr->prices[t]-ptr->prices[s])<<' ';
         int seat=ptr->seatNum;
         for(int j=s;j<t;j++)seat=std::min(seat,ptr->stationTicketRemains[calcdays(start,startday)][j]);
         defaultOut<<seat<<endl;
