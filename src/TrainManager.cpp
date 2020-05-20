@@ -135,7 +135,7 @@ bool TrainManager::Query_train(const trainID_t& t,int date){//date = mmdd
     auto* ptr=cache.get(loc);
     int start=(ptr->saleDate)/10000;
     int end=(ptr->saleDate)%10000;
-    if(!ptr->releaseState||date<start||date>end){
+    if(date<start||date>end){
         defaultOut<<"-1"<<endl;
         return false;
     }
