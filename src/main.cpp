@@ -1,69 +1,88 @@
 #include <iostream>
+#include <fstream>
+#include <cstdio>
+#include "global.h"
+#include "../basic_component/LRUBPtree.h"
+#include "structure.h"
+#include "UserManager.h"
+#include "TrainManager.h"
+#include "OrderManager.h"
+
 using namespace std;
-class Connector;
-const int LINE_BUF_SIZE=2048;
-#define _OnlineJudge_
-#ifdef _OnlineJudge_
-class Connector{
-private:
-    char buf[LINE_BUF_SIZE];
-public:
-    Connector()=default;
-    const char* getLine(int& id){
-        cin.getline(buf,LINE_BUF_SIZE);
-        return buf;
+using namespace t_sys;
+using namespace bptree;
+
+bool needInit() {
+    if (FILE* file = fopen(USER_PATH, "r")) {
+        fclose(file);
+        return false;
+    } else return true;
+}
+
+int main() {
+    if (needInit()) {
+        LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
+        LRUBPTree<long long, int>::Init(TRIAN_STATION_INDEX_PATH);
+        LRUBPTree<username_t, DiskLoc_T>::Init(USER_INDEX_PATH);
+        UserManager::Init(USER_PATH);
+        TrainManager::Init(TRAIN_PATH);
+        OrderManager::Init(ORDER_PATH);
     }
-    void writeUp(const char* str,int id){
-        cout<<str<<endl;
-    }
-};
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-class Connector{
-private:
-    static const int LOCAL_PORT=7817;
-    static const int QUEUE_LEN=30;
-    int listen_fd;
-    char buf[LINE_BUF_SIZE];
-public:
-    /*
-     * use IPv4 and TCP for compatibility
-     */
-    Connector(){
-        int err;
-        listen_fd=socket(AF_INET,SOCK_STREAM,0);
-        sockaddr_in local_addr;
-        local_addr.sin_family=AF_INET;
-        local_addr.sin_addr.s_addr=htonl(INADDR_ANY);
-        local_addr.sin_port=htons(LOCAL_PORT);
-        if((err=bind(listen_fd,(sockaddr*)&local_addr,sizeof(local_addr)))!=0)throw std::runtime_error("bind error "+to_string(err));
-        if((err=listen(listen_fd,QUEUE_LEN))!=0)throw std::runtime_error("listen error "+to_string(err));
-    }
-    ~Connector(){
-        close(listen_fd);
+    UserManager user_mgr(USER_PATH, USER_INDEX_PATH);
+    TrainManager train_mgr(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRIAN_STATION_INDEX_PATH);
+    OrderManager order_mgr(ORDER_PATH);
+    char buffer[16];
+    while (cin>>buffer){
+        if(buffer[0]=='q'){
+            // query_*
+            if(buffer[6]=='p'){
+                // query_profile
+            } else if(buffer[6]=='o'){
+                // query_order
+            } else{
+                if(buffer[7]=='i'){
+                    // query_ticket
+                } else if(buffer[9]=='i'){
+                    // query_train
+                } else{
+                    // query_transfer
+                }
+            }
+        } else if(buffer[0]=='a'){
+            if(buffer[4]=='u'){
+                // add_user
+            } else{
+                // add_train
+            }
+        } else if(buffer[0]=='l'){
+            if(buffer[3]=='i'){
+                // login
+            } else{
+                // logout
+            }
+        } else if(buffer[0]=='r'){
+            if(buffer[2]=='l'){
+                // release_train
+            } else{
+                // refund_ticket
+            }
+        } else{
+            switch (buffer[0]) {
+                case 'b':
+                    // buy_ticket
+                    break;
+                case 'c':
+                    // clean
+                    break;
+                case 'd':
+                    // delete_train
+                    break;
+                case 'e':
+                    // exit
+                    break;
+            }
+        }
     }
 
-    const char* getLine(int& id){
-        int size;
-        sockaddr_in client_addr;
-        socklen_t client_len=sizeof(client_addr);
-        id=accept(listen_fd,(sockaddr*)&client_addr,&client_len);
-        if((size=read(id, buf, LINE_BUF_SIZE)) < 0)throw std::runtime_error("read error "+to_string(size));
-        buf[size]='\0';
-        return buf;
-    }
-
-    void writeUp(const char* str,int fd){
-        write(fd,str,sizeof(str));
-        close(fd);
-    }
-};
-#endif
-int main(){
-    Connector client;
-    // todo use Connector to interact with OJ or python server
     return 0;
 }
