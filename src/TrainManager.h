@@ -111,6 +111,17 @@ namespace t_sys {
             }
         }
 
+        int calctime(int start,int end){
+            int mm=end%100-start%100;
+            start/=100,end/=100;
+            if(mm<0)mm+=60,end--;
+            int hh=end/100-start/100;
+            start/=100,end/=100;
+            if(hh<0)hh+=24,end--;
+            int ddd=end-start;
+            return ddd*10000+hh*100+mm;
+        }
+
         int calcstartday(int date,int days){
             if(date%100>days)return date-days;
             days-=date%100;
