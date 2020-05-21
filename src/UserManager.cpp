@@ -67,14 +67,15 @@ bool UserManager::Modify_profile(const username_t& origin,const username_t& targ
     }
     DiskLoc_T loc=usernameToOffset.search(target).first;
     auto* ptr=cache.get(loc);
+    // todo requirements may change
+    if(n_privilege)
+        ptr->privilege=*n_privilege;
     if(n_passed)
         strcpy(ptr->password,n_passed);
     if(n_name)
         strcpy(ptr->name,n_name);
     if(n_mail)
         strcpy(ptr->mailAddr,n_mail);
-    if(n_privilege)
-        ptr->privilege=*n_privilege;
     cache.dirty_bit_set(loc);
     defaultOut<<(ptr->username.name)<<' '<<(ptr->name)<<' '<<(ptr->mailAddr)<<' '<<(ptr->privilege)<<endl;
     return true;

@@ -8,8 +8,8 @@ bool t_sys::needInit() {
     } else return true;
 }
 
-char t_sys::getOption(){
+char t_sys::getOption(std::istream& ifs){
     char buf[4];
-    std::cin>>buf;
+    ifs>>buf;
     return buf[1];
 }

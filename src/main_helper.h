@@ -23,7 +23,7 @@ namespace t_sys{
 
     bool needInit();
 
-    char getOption();
+    char getOption(std::istream& ifs=std::cin);
 
 }
 #endif //TICKETSYSTEM_COMMANDS_H
