@@ -4,5 +4,5 @@ project(TicketSystem)
 set(CMAKE_CXX_STANDARD 17)
 aux_source_directory(src _SOURCE)
 aux_source_directory(basic_component _SOURCE)
-add_executable(TicketSystem ${_SOURCE} test_cpp/test.cpp src/main.cpp basic_component/PersistentList.h src/TrainManager.cpp)
+add_executable(TicketSystem ${_SOURCE} test_cpp/test.cpp src/main.cpp basic_component/PersistentList.h src/TrainManager.cpp src/main_helper.h src/commands.cpp src/commands.h src/main_helper.cpp src/commands.h)
 

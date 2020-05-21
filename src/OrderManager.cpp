@@ -1,6 +1,28 @@
 #include "OrderManager.h"
 using namespace t_sys;
 
+/*
+ * fill file with record and return the block's offset
+ */
+DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T where) {
+    // construct buffer
+    char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
+    char* buf = buffer;
+    int size = (record != nullptr);
+# define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
+    write_attribute(where);
+    write_attribute(size);
+    if (record) {
+        write_attribute(*record);
+    }
+#undef write_attribute
+    // write buffer
+    file.write(buffer, file_size, sizeof(buffer));
+    where = file_size;
+    file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*count;
+    return where;
+}
+
 int OrderManager::getRecord(DiskLoc_T* where, order* ptr) {
     int size;
     DiskLoc_T cur=*where;
@@ -11,7 +33,7 @@ int OrderManager::getRecord(DiskLoc_T* where, order* ptr) {
     return size;
 }
 
-DiskLoc_T OrderManager::appendRecord(DiskLoc_T where, const order* record) {
+DiskLoc_T OrderManager::appendRecord(DiskLoc_T where, const order* record,int* offset_val) {
     int size;
     file.read((char*) &size,where+sizeof(DiskLoc_T), sizeof(int));
     if (size == count) {
@@ -33,16 +55,16 @@ static const char* express(char* buf,int what){
         strcpy(buf,"xx-xx xx:xx");
     } else {
         buf[0] = '0'+(what/10000000)%10;
-        buf[1] = '0'+(what/10000000)%10;
+        buf[1] = '0'+(what/1000000)%10;
         buf[2] = '-';
-        buf[3] = '0'+(what/10000000)%10;
-        buf[4] = '0'+(what/10000000)%10;
+        buf[3] = '0'+(what/100000)%10;
+        buf[4] = '0'+(what/10000)%10;
         buf[5] = ' ';
-        buf[6] = '0'+(what/10000000)%10;
-        buf[7] = '0'+(what/10000000)%10;
+        buf[6] = '0'+(what/1000)%10;
+        buf[7] = '0'+(what/100)%10;
         buf[8] = ':';
-        buf[9] = '0'+(what/10000000)%10;
-        buf[10] = '0'+(what/10000000)%10;
+        buf[9] = '0'+(what/10)%10;
+        buf[10] = '0'+what%10;
         buf[11] = '\0';
     }
     return buf;
@@ -96,5 +118,11 @@ bool OrderManager::refundOrder(DiskLoc_T head, int n) {
         cnt+=sz;
     }
     return false;
+}
+
+void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
+    order::STATUS s=order::SUCCESS;
+    // notice: order.stat is 0-offset in order structure
+    file.write((char*)s,block+sizeof(int)+sizeof(DiskLoc_T)+DATA_SIZE*offset_in_block+0,sizeof(s));
 }
 

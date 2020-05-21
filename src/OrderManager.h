@@ -34,24 +34,7 @@ namespace t_sys {
         PageManager file;
         DiskLoc_T file_size;
 
-        DiskLoc_T extend(const order* record, DiskLoc_T where) {
-            // construct buffer
-            char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
-            char* buf = buffer;
-            int size = (record != nullptr);
-# define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
-            write_attribute(where);
-            write_attribute(size);
-            if (record) {
-                write_attribute(*record);
-            }
-#undef write_attribute
-            // write buffer
-            file.write(buffer, file_size, sizeof(buffer));
-            where = file_size;
-            file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*count;
-            return where;
-        }
+        DiskLoc_T extend(const order* record, DiskLoc_T where);
 
     public:
         /*
@@ -61,20 +44,40 @@ namespace t_sys {
          * @modify: where will be pointed to next offset
          */
         int getRecord(DiskLoc_T* where, order* ptr);
-        DiskLoc_T appendRecord(DiskLoc_T where, const order* record);
+
+        /*
+         * if offset_val is not null, where it points will become the offset in the block
+         *
+         * @return: current head offset
+         */
+        DiskLoc_T appendRecord(DiskLoc_T where, const order* record,int* offset_val= nullptr);
+
+        /*
+         * @return: current head offset
+         */
         DiskLoc_T createRecord();
+
         /*
          * do not check permission
          * called by UserManager and not directly called by logic codes
          */
         void printAllOrders(std::ostream& ofs, DiskLoc_T head);
-        bool refundOrder(DiskLoc_T head,int n);
+
+        /*
+         * @return: whether the operation succeeds
+         */
+        bool refundOrder(DiskLoc_T head, int n);
+
+        void setSuccess(DiskLoc_T block,int offset_in_block);
+
         explicit OrderManager(const std::string& file_path);
+
         ~OrderManager();
+
         static void Init(const std::string& path) {
-            std::fstream file(path,ios::binary|ios::out);
+            std::fstream file(path, ios::binary | ios::out);
             DiskLoc_T sz = sizeof(DiskLoc_T);
-            file.write((char*)&sz, sizeof(sz));
+            file.write((char*) &sz, sizeof(sz));
             file.close();
         }
     };
