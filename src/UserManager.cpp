@@ -134,3 +134,14 @@ UserManager::~UserManager(){
     cache.destruct();
     userFile.close();
 }
+bool UserManager::Query_Order(OrderManager* order_mgr, const username_t& usr) {
+    if(isOnline(usr)){
+        auto pair=usernameToOffset.search(usr);
+        auto* ptr=cache.get(pair.first);
+        order_mgr->printAllOrders(defaultOut,ptr->orderOffset);
+        return true;
+    } else{
+        defaultOut<<"-1"<<endl;
+        return false;
+    }
+}

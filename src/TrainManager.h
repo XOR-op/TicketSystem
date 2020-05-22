@@ -77,6 +77,7 @@ namespace t_sys {
         DiskLoc_T increaseFile(train* tra);
 
     public:
+        enum {TIME=0,COST=1};
         int findtrainID(const trainID_t& t){
             auto rt=trainidToOffset.search(t);
             if(rt.second)return 1;
@@ -84,7 +85,7 @@ namespace t_sys {
         }
         void print(int x){
             if(x<10)defaultOut<<'0'<<x;
-                else defaultOut<<x;
+            else defaultOut<<x;
         }
         void printdate(int x){
             print(x/100);
@@ -95,6 +96,11 @@ namespace t_sys {
             print(x/100);
             defaultOut<<':';
             print(x%100);
+        }
+
+        static int parsingDate(const char* str){
+            // str guaranteed be 5+1 long
+            return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
         }
 
         int calcdays(int start,int end){
@@ -143,9 +149,9 @@ namespace t_sys {
 
         bool Query_train(const trainID_t& t,int date);//date = mmdd
 
-        void Query_ticket(char* Sstation,char* Tstation,int date,int order=0);//order: time = 0, cost = 1
+        void Query_ticket(char* Sstation,char* Tstation,int date,int order=TIME);//order: time = 0, cost = 1
 
-        void Query_transfer(char *Sstation,char *Tstation,int date,int order=0);
+        void Query_transfer(char *Sstation,char *Tstation,int date,int order=TIME);
 
         TrainManager(const std::string& file_path,const std::string& trainid_index_path,const std::string& station_index_path);
 

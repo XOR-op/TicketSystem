@@ -58,6 +58,8 @@ namespace t_sys {
         bool Add_user(OrderManager* ord_manager, const username_t* cur_user, const username_t* u,
                       const char* passwd, const char* name, const char* mailaddr, int privilege);
 
+        bool Query_Order(OrderManager* order_mgr,const username_t& usr);
+
         UserManager(const std::string& file_path, const std::string& username_index_path);
 
         ~UserManager();

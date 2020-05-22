@@ -74,6 +74,7 @@ int main() {
             }
         } else if(buffer[0]=='e'){
             // exit
+            cout<<"bye"<<endl;
             break;
         }
         else{
@@ -85,8 +86,10 @@ int main() {
                     break;
                 case 'c':
                     // clean
+                    // todo need reconstructing managers !!!
                     cleanAll();
                     init();
+                    cout<<"0"<<endl;
                     break;
                 case 'd':
                     // delete_train
