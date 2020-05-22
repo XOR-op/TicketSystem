@@ -8,6 +8,7 @@
 #include "TrainManager.h"
 #include "OrderManager.h"
 #include "main_helper.h"
+#include "commands.h"
 
 using namespace std;
 using namespace t_sys;
@@ -33,44 +34,54 @@ void cleanAll(){
 
 int main() {
     if (needInit()) init();
-    UserManager user_mgr(USER_PATH, USER_INDEX_PATH);
-    TrainManager train_mgr(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRIAN_STATION_INDEX_PATH);
-    OrderManager order_mgr(ORDER_PATH);
+    auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
+    auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRIAN_STATION_INDEX_PATH);
+    auto* order_mgr=new OrderManager(ORDER_PATH);
     vars binding(train_mgr,user_mgr,order_mgr);
     char buffer[16];
     while (cin>>buffer){
         if(buffer[0]=='q'){
             if(buffer[6]=='p'){
                 // query_profile
-
+                query_profile(binding);
             } else if(buffer[6]=='o'){
                 // query_order
+                query_order(binding);
             } else{
                 if(buffer[7]=='i'){
                     // query_ticket
+                    query_ticket(binding);
                 } else if(buffer[9]=='i'){
                     // query_train
+                    query_train(binding);
                 } else{
                     // query_transfer
+                    query_transfer(binding);
                 }
             }
         } else if(buffer[0]=='a'){
             if(buffer[4]=='u'){
                 // add_user
+                add_user(binding);
             } else{
                 // add_train
+                add_train(binding);
             }
         } else if(buffer[0]=='l'){
             if(buffer[3]=='i'){
                 // login
+                login(binding);
             } else{
                 // logout
+                logout(binding);
             }
         } else if(buffer[0]=='r'){
             if(buffer[2]=='l'){
                 // release_train
+                release_train(binding);
             } else{
                 // refund_ticket
+                refund_ticket(binding);
             }
         } else if(buffer[0]=='e'){
             // exit
@@ -81,18 +92,28 @@ int main() {
             switch (buffer[0]) {
                 case 'm':
                     // modify_profile
+                    modify_profile(binding);
+                    break;
                 case 'b':
                     // buy_ticket
+                    buy_ticket(binding);
                     break;
                 case 'c':
                     // clean
-                    // todo need reconstructing managers !!!
                     cleanAll();
+                    delete user_mgr;
+                    delete train_mgr;
+                    delete order_mgr;
                     init();
+                    user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
+                    train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRIAN_STATION_INDEX_PATH);
+                    order_mgr=new OrderManager(ORDER_PATH);
+                    binding=vars(train_mgr,user_mgr,order_mgr);
                     cout<<"0"<<endl;
                     break;
                 case 'd':
                     // delete_train
+                    delete_train(binding);
                     break;
             }
         }

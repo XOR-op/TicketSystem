@@ -12,7 +12,7 @@ void t_sys::query_profile(vars v){
             cin>>cur.name;
         else cin>>usr.name;
     }
-    v.user_mgr.Query_profile(cur,usr);
+    v.user_mgr->Query_profile(cur,usr);
 }
 
 void t_sys::query_ticket(vars v){
@@ -29,7 +29,7 @@ void t_sys::query_ticket(vars v){
             case 'p':iss>>p;break;
         }
     }
-    v.train_mgr.Query_ticket(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
+    v.train_mgr->Query_ticket(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
 }
 
 void t_sys::query_transfer(vars v){
@@ -46,7 +46,7 @@ void t_sys::query_transfer(vars v){
             case 'p':iss>>p;break;
         }
     }
-    v.train_mgr.Query_transfer(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
+    v.train_mgr->Query_transfer(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
 }
 
 
@@ -59,14 +59,14 @@ void t_sys::login(vars v){
             cin >> username.name;
         } else cin>>passwd;
     }
-    v.user_mgr.Login(username,passwd);
+    v.user_mgr->Login(username,passwd);
 }
 
 void t_sys::logout(vars v){
     username_t username;
     getOption(); // must be '-u'
     cin>>username.name;
-    v.user_mgr.Logout(username);
+    v.user_mgr->Logout(username);
 }
 
 void t_sys::modify_profile(vars v){
@@ -88,14 +88,14 @@ void t_sys::modify_profile(vars v){
             case 'g':iss>>p;break;
         }
     }
-    v.user_mgr.Modify_profile(cur,u.username,passwd,name,mail,p==-1? nullptr:&p);
+    v.user_mgr->Modify_profile(cur,u.username,passwd,name,mail,p==-1? nullptr:&p);
 }
 
 void t_sys::query_order(vars v){
     username_t username;
     getOption(); // must be '-u'
     cin>>username.name;
-    v.user_mgr.Query_Order(&v.order_mgr,username);
+    v.user_mgr->Query_Order(v.order_mgr,username);
 }
 
 void t_sys::add_user(vars v){
@@ -111,7 +111,7 @@ void t_sys::add_user(vars v){
             case 'g':cin>>u.privilege;break;
         }
     }
-    v.user_mgr.Add_user(&v.order_mgr,&cur,&u.username,u.password,u.name,u.mailAddr,u.privilege);
+    v.user_mgr->Add_user(v.order_mgr,&cur,&u.username,u.password,u.name,u.mailAddr,u.privilege);
 }
 
 
@@ -119,14 +119,14 @@ void t_sys::release_train(vars v){
     trainID_t train_id;
     getOption();
     cin>>train_id.ID;
-    v.train_mgr.Release_train(train_id);
+    v.train_mgr->Release_train(train_id);
 }
 
 void t_sys::delete_train(vars v){
     trainID_t train_id;
     getOption();
     cin>>train_id.ID;
-    v.train_mgr.Delete_train(train_id);
+    v.train_mgr->Delete_train(train_id);
 }
 
 void t_sys::query_train(vars v){
@@ -138,7 +138,7 @@ void t_sys::query_train(vars v){
             cin>>tid.ID;
         else cin>>date;
     }
-    v.train_mgr.Query_train(tid,TrainManager::parsingDate(date));
+    v.train_mgr->Query_train(tid,TrainManager::parsingDate(date));
 }
 
 void t_sys::refund_ticket(vars v){
