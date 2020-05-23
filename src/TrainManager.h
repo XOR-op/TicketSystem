@@ -103,6 +103,10 @@ namespace t_sys {
             return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
         }
 
+        static int parsingTime(const char* str){
+            return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
+        }
+
         int calcdays(int start,int end){
             if(start/100==end/100)return end-start;
             else {
@@ -149,9 +153,9 @@ namespace t_sys {
 
         bool Query_train(const trainID_t& t,int date);//date = mmdd
 
-        bool Query_ticket(char* Sstation,char* Tstation,int date,int order=TIME);//order: time = 0, cost = 1
+        void Query_ticket(char* Sstation,char* Tstation,int date,int order=TIME);//order: time = 0, cost = 1
 
-        bool Query_transfer(char *Sstation,char *Tstation,int date,int order=TIME);
+        void Query_transfer(char *Sstation,char *Tstation,int date,int order=TIME);
 
         bool Buy_ticket(UserManager* usr_manager,OrderManager* ord_manager,username_t usr,trainID_t tra,
                         int date,int num,char *Sstation,char *Tstation,bool wait=0);

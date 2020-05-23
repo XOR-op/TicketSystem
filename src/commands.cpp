@@ -16,34 +16,28 @@ void t_sys::query_profile(vars v){
 }
 
 void t_sys::query_ticket(vars v){
-    char buf[500];
     char date[8],p[8],start[24],to[24];
     p[0]='t';
-    cin.getline(buf,500);
-    istringstream iss(buf);
-    while (iss){
-        switch (getOption(iss)) {
-            case 's':iss>>start;break;
-            case 't':iss>>to;break;
-            case 'd':iss>>date;break;
-            case 'p':iss>>p;break;
+    while (cin.get()!='\n'){
+        switch (getOption()) {
+            case 's':cin >> start;break;
+            case 't':cin >> to;break;
+            case 'd':cin >> date;break;
+            case 'p':cin >> p;break;
         }
     }
     v.train_mgr->Query_ticket(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
 }
 
 void t_sys::query_transfer(vars v){
-    char buf[500];
     char date[8],p[8],start[24],to[24];
     p[0]='t';
-    cin.getline(buf,500);
-    istringstream iss(buf);
-    while (iss){
-        switch (getOption(iss)) {
-            case 's':iss>>start;break;
-            case 't':iss>>to;break;
-            case 'd':iss>>date;break;
-            case 'p':iss>>p;break;
+    while (cin.get()!='\n'){
+        switch (getOption()) {
+            case 's':cin >> start;break;
+            case 't':cin >> to;break;
+            case 'd':cin >> date;break;
+            case 'p':cin >> p;break;
         }
     }
     v.train_mgr->Query_transfer(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
@@ -70,22 +64,18 @@ void t_sys::logout(vars v){
 }
 
 void t_sys::modify_profile(vars v){
-    char buf[500];
-    cin.getline(buf,500);
-    istringstream iss(buf);
     username_t cur;
     user u;
-    char *passwd= nullptr,*mail= nullptr,*name= nullptr,c;
+    char *passwd= nullptr,*mail= nullptr,*name= nullptr;
     int p=-1;
-    while (iss){
-        c=getOption(iss);
-        switch (c) {
-            case 'c':iss>>cur.name;break;
-            case 'u':iss>>u.username.name;break;
-            case 'p':iss>>u.password;passwd=u.password;break;
-            case 'n':iss>>u.name;name=u.name;break;
-            case 'm':iss>>u.mailAddr;mail=u.mailAddr;break;
-            case 'g':iss>>p;break;
+    while (cin.get()!='\n'){
+        switch (getOption()) {
+            case 'c':cin >> cur.name;break;
+            case 'u':cin >> u.username.name;break;
+            case 'p':cin >> u.password;passwd=u.password;break;
+            case 'n':cin >> u.name;name=u.name;break;
+            case 'm':cin >> u.mailAddr;mail=u.mailAddr;break;
+            case 'g':cin >> p;break;
         }
     }
     v.user_mgr->Modify_profile(cur,u.username,passwd,name,mail,p==-1? nullptr:&p);
@@ -142,23 +132,86 @@ void t_sys::query_train(vars v){
 }
 
 void t_sys::refund_ticket(vars v){
-    char buf[64];
     username_t u;int n=1;
-    cin.getline(buf,64);
-    istringstream iss(buf);
-    while (iss){
-        switch (getOption(iss)) {
-            case 'u':iss>>u.name;break;
-            case 'n':iss>>n;break;
+    while (cin.get()!='\n'){
+        switch (getOption()) {
+            case 'u':cin>>u.name;break;
+            case 'n':cin>>n;break;
         }
     }
-    // todo invoke a future function
+    v.train_mgr->Refund_ticket(v.user_mgr,v.order_mgr,u,n);
 }
 
 void t_sys::buy_ticket(vars v){
+    username_t usr;
+    trainID_t tid;
+    char date[8],from[24],to[24],q[8];
+    int n;
+    q[0]='f';
+    while (cin.get()!='\n'){
+        switch (getOption()) {
+            case 'u':cin>>usr.name;break;
+            case 'i':cin>>tid.ID;break;
+            case 'd':cin>>date;break;
+            case 'n':cin>>n;break;
+            case 'f':cin>>from;break;
+            case 't':cin>>to;break;
+            case 'q':cin>>q;break;
+        }
+    }
+    v.train_mgr->Buy_ticket(v.user_mgr,v.order_mgr,usr,tid,TrainManager::parsingDate(date),n,from,to,q[0]=='t');
+}
 
+void splitInt(const char* buf,int* arr){
+    int curN=0;
+    for(const auto * ptr=buf;*ptr;++ptr){
+        if(*ptr=='|') {
+            *arr++ = curN;
+            curN=0;
+        }else curN=curN*10+*ptr-'0';
+    }
+    *arr=curN;
+}
+
+void splitStr(char* buf,char** arr){
+    char* cur=buf;
+    for(char* ptr=buf;*ptr;++ptr){
+        if(*ptr=='|') {
+            *arr++=cur;
+            *ptr='\0';
+            cur=ptr+1;
+        }
+    }
+    *arr=cur;
+}
+
+int parsingDateAndTime(const char* str){
+    return (str[0]-'0')*10000000+(str[1]-'0')*1000000+(str[3]-'0')*100000+(str[4]-'0')*10000+(str[6]-'0')*1000+(str[7]-'0')*100+(str[9]-'0')*10+(str[10]-'0');
 }
 
 void t_sys::add_train(vars v){
-
+    char station_buf[21*101],prices_buf[7*101],travelTimes_buf[6*101],stopTimes_buf[6*101],start_time[8],salesDate_buf[16];
+    trainID_t tid;
+    int seatNum,stationNum;
+    char type;
+    while (cin.get()!='\n'){
+        switch (getOption()) {
+            case 'i':cin>>tid.ID;break;
+            case 'n':cin>>stationNum;break;
+            case 'm':cin>>seatNum;break;
+            case 's':cin>>station_buf;break;
+            case 'p':cin>>prices_buf;break;
+            case 'x':cin>>start_time;break;
+            case 't':cin>>travelTimes_buf;break;
+            case 'o':cin>>stopTimes_buf;break;
+            case 'd':cin>>salesDate_buf;break;
+            case 'y':cin>>type;break;
+        }
+    }
+    char* stations[101];
+    int prices[101],travelTime[101],stopoverTimes[101],salesDate=parsingDateAndTime(salesDate_buf);
+    splitStr(station_buf,stations);
+    splitInt(travelTimes_buf,travelTime);
+    splitInt(stopTimes_buf,stopoverTimes);
+    v.train_mgr->Add_train(tid,stationNum,seatNum,stations,prices,TrainManager::parsingTime(start_time),travelTime,stopoverTimes,salesDate,type);
 }
