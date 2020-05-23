@@ -33,17 +33,17 @@ int OrderManager::getRecord(DiskLoc_T* where, order* ptr) {
     return size;
 }
 
-DiskLoc_T OrderManager::appendRecord(DiskLoc_T where, const order* record,int* offset_val) {
+std::pair<DiskLoc_T,int> OrderManager::appendRecord(DiskLoc_T where, const order* record,int* offset_val) {
     int size;
     file.read((char*) &size,where+sizeof(DiskLoc_T), sizeof(int));
     if (size == count) {
         // extend
-        return extend(record, where);
+        return std::make_pair(extend(record, where),1);
     } else {
         file.write((char*) record,where+sizeof(int)+sizeof(DiskLoc_T)+DATA_SIZE*size, DATA_SIZE);
         size+=1;
         file.write((char*) &size,where+sizeof(DiskLoc_T), sizeof(int));
-        return where;
+        return std::make_pair(where,size);
     }
 }
 
@@ -102,7 +102,7 @@ OrderManager::~OrderManager() {
 #undef write_attribute
     file.write(buf,0, sizeof(buf));
 }
-bool OrderManager::refundOrder(DiskLoc_T head, int n) {
+std::pair<bool,order> OrderManager::refundOrder(DiskLoc_T head, int n) {
     order buf[count];
     int cnt=0;
     while (head!=NO_NEXT){
@@ -113,12 +113,12 @@ bool OrderManager::refundOrder(DiskLoc_T head, int n) {
             if(ref.stat!=order::REFUNDED){
                 order::STATUS stat=order::REFUNDED;
                 file.write((char*)&stat,head+sizeof(order)*(sz-n+cnt),sizeof(stat));
-                return true;
-            } else return false;
+                return std::make_pair(true,ref);
+            } else return std::make_pair(false,order());
         }
         cnt+=sz;
     }
-    return false;
+    return std::make_pair(false,order());
 }
 
 void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
@@ -132,4 +132,3 @@ void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
 #endif
     file.write((char*)s,block+sizeof(int)+sizeof(DiskLoc_T)+DATA_SIZE*offset_in_block+0,sizeof(s));
 }
-

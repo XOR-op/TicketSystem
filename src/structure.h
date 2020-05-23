@@ -24,7 +24,7 @@ namespace t_sys {
         char name[21];
         char mailAddr[31];
         int privilege;
-        DiskLoc_T orderOffset;
+        DiskLoc_T orderOffset,noworderOffset;
     };
 
     struct trainID_t {
@@ -66,6 +66,7 @@ namespace t_sys {
         int prices[101];
         int travelTimes[101];
         int stopoverTimes[101];
+        DiskLoc_T ticket_head,ticket_end;
         //release时，travelTimes[]、stopoverTimes[] 将会做一个前缀和，也就是变成每个站的离开时间和到达时间
         //形式为dddmmss,ddd是天没有月的概念，始发站为0
         int stationTicketRemains[101][101];
@@ -81,9 +82,17 @@ namespace t_sys {
         int arriveTime;
         int price;
         int num;
+        int day;
+        int key;
         char trainID[21];
         char from[41];
         char to[41];
+    };
+
+    struct pending_order{
+        DiskLoc_T block,nxt;
+        int offset_in_block,day,key;
+        int require[101];
     };
 
 }
