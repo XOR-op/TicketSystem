@@ -160,8 +160,8 @@ bool TrainManager::Query_train(const trainID_t& t,int date){//date = mmdd
 }
 void TrainManager::Query_ticket(char* Sstation,char* Tstation,int date,int order)
 {
-    std::vector<std::pair<long long,int>>S=stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,stationlist[station_t(Sstation)]*10000LL+9999);
-    std::vector<std::pair<long long,int>>T=stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,stationlist[station_t(Tstation)]*10000LL+9999);
+    pse_std::vector<std::pair<long long,int>>S=stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,stationlist[station_t(Sstation)]*10000LL+9999);
+    pse_std::vector<std::pair<long long,int>>T=stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,stationlist[station_t(Tstation)]*10000LL+9999);
     pse_std::vector<std::pair<int,std::pair<int,int>>>Ans;
     int ansnum=0;
     for(int i=0,j=0;i<S.size()&&j<T.size();){
@@ -229,8 +229,8 @@ void TrainManager::Query_ticket(char* Sstation,char* Tstation,int date,int order
 }
 void TrainManager::Query_transfer(char *Sstation,char *Tstation,int date,int order)
 {
-    std::vector<std::pair<long long,int>>S=stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,stationlist[station_t(Sstation)]*10000LL+9999);
-    std::vector<std::pair<long long,int>>T=stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,stationlist[station_t(Tstation)]*10000LL+9999);
+    pse_std::vector<std::pair<long long,int>>S=stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,stationlist[station_t(Sstation)]*10000LL+9999);
+    pse_std::vector<std::pair<long long,int>>T=stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,stationlist[station_t(Tstation)]*10000LL+9999);
     int minkey=2147483647;
     std::pair<int,std::pair<int,int>>A,B;
     for(int i=0;i<S.size();i++)

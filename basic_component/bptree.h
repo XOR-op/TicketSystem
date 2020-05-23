@@ -496,13 +496,13 @@ namespace bptree {
         }
         for (int i = (int) (lower_bound(ptr->K, ptr->K+ptr->size, low,les)-ptr->K); i < ptr->size; ++i) {
             if (les(high ,ptr->K[i]))goto FIN;
-            ret.emplace_back(ptr->K[i], ptr->V[i]);
+            ret.push_back({ptr->K[i], ptr->V[i]});
         }
         while (ptr->next != Node<KeyType, ValueType>::NONE) {
             ptr = loadNode(ptr->next);
             for (int i = 0; i < ptr->size; ++i) {
                 if (les(high, ptr->K[i]))goto FIN;
-                ret.emplace_back(ptr->K[i], ptr->V[i]);
+                ret.push_back({ptr->K[i], ptr->V[i]});
             }
         }
         FIN:
