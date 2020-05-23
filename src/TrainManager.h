@@ -4,9 +4,9 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
-//#include <bits/stdc++.h>//delete it!
 #include "structure.h"
 #include "OrderManager.h"
+#include "UserManager.h"
 #include "../basic_component/cache.h"
 #include "../basic_component/LRUBPtree.h"
 #include "../include/vector.hpp"
@@ -22,7 +22,7 @@ namespace t_sys {
         bptree::LRUBPTree<long long,int> stationTotrain; //long long = stationnum+trainnum, int = k-th station
         int trainnum;//0-base
         int stationnum;//1-base
-        pse_std::vector<trainID_t>trainlist;//change
+        pse_std::vector<trainID_t>trainlist;
 
         static inline unsigned int myhash( const void * key, int len, unsigned int seed )
         {
@@ -57,7 +57,7 @@ namespace t_sys {
                 return myhash(ctx.st,strlen(ctx.st),static_cast<size_t>(0xc70f6907UL));
             }
         };
-        ds::unordered_map<station_t ,int ,stationhash>stationlist;//change
+        ds::unordered_map<station_t ,int ,stationhash>stationlist;
 
         struct freenode{
             freenode* nxt;
@@ -149,9 +149,14 @@ namespace t_sys {
 
         bool Query_train(const trainID_t& t,int date);//date = mmdd
 
-        void Query_ticket(char* Sstation,char* Tstation,int date,int order=TIME);//order: time = 0, cost = 1
+        bool Query_ticket(char* Sstation,char* Tstation,int date,int order=TIME);//order: time = 0, cost = 1
 
-        void Query_transfer(char *Sstation,char *Tstation,int date,int order=TIME);
+        bool Query_transfer(char *Sstation,char *Tstation,int date,int order=TIME);
+
+        bool Buy_ticket(UserManager* usr_manager,OrderManager* ord_manager,username_t usr,trainID_t tra,
+                        int date,int num,char *Sstation,char *Tstation,bool wait=0);
+
+        bool Refund_ticket(UserManager* usr_manager,OrderManager* ord_manager,username_t usr,int x=1);
 
         TrainManager(const std::string& file_path,const std::string& trainid_index_path,const std::string& station_index_path);
 
