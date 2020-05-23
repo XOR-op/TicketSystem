@@ -61,7 +61,6 @@ namespace t_sys{
     template<typename T>
     PersistentList<T>::PersistentList(const std::string& path):pm(path){
         // assert there exists a list
-        // todo adjust ways to handle non-exist case
         DiskLoc_T cur=0;
         auto rd=[this,&cur](void* ptr,size_t sz){pm.read((char*)ptr,cur,sz);cur+=sz;};
         rd(file_size,sizeof(file_size));

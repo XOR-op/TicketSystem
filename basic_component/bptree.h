@@ -137,7 +137,6 @@ namespace bptree {
 
         /*
          *  search: if not found, pair.second = false
-         *  @todo process same key
          */
         std::pair<ValueType, bool> search(const KeyType& key);
 

@@ -67,9 +67,13 @@ bool UserManager::Modify_profile(const username_t& origin,const username_t& targ
     }
     DiskLoc_T loc=usernameToOffset.search(target).first;
     auto* ptr=cache.get(loc);
-    // todo requirements may change
-    if(n_privilege)
-        ptr->privilege=*n_privilege;
+    if(n_privilege) {
+        if(*n_privilege>=getPrivilege(origin)){
+            defaultOut<<"-1"<<endl;
+            return false;
+        }
+        ptr->privilege = *n_privilege;
+    }
     if(n_passed)
         strcpy(ptr->password,n_passed);
     if(n_name)
