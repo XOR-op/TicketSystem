@@ -54,6 +54,7 @@ static const char* express(char* buf,int what){
     if(what==order::NONE_TIME){
         strcpy(buf,"xx-xx xx:xx");
     } else {
+        assert(what<=99999999);
         buf[0] = '0'+(what/10000000)%10;
         buf[1] = '0'+(what/1000000)%10;
         buf[2] = '-';
@@ -123,6 +124,12 @@ bool OrderManager::refundOrder(DiskLoc_T head, int n) {
 void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
     order::STATUS s=order::SUCCESS;
     // notice: order.stat is 0-offset in order structure
+#ifndef NDEBUG
+    // only for debug
+    order::STATUS tmp;
+    file.read((char*)tmp,block+sizeof(int)+sizeof(DiskLoc_T)+DATA_SIZE*offset_in_block+0,sizeof(s));
+    assert(tmp==order::PENDING);
+#endif
     file.write((char*)s,block+sizeof(int)+sizeof(DiskLoc_T)+DATA_SIZE*offset_in_block+0,sizeof(s));
 }
 

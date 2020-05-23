@@ -5,6 +5,7 @@
 #ifndef TICKETSYSTEM_GLOBAL_H
 #define TICKETSYSTEM_GLOBAL_H
 #include <memory>
+#include <cassert>
 namespace t_sys{
     typedef std::size_t DiskLoc_T;
     typedef const char* const str_t ;

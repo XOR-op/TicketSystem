@@ -11,5 +11,6 @@ bool t_sys::needInit() {
 char t_sys::getOption(std::istream& ifs){
     char buf[4];
     ifs>>buf;
+    assert(buf[0]=='-');
     return buf[1];
 }
