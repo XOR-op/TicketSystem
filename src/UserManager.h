@@ -69,19 +69,7 @@ namespace t_sys {
 
         ~UserManager();
 
-        static void Init(const std::string& path) {
-            std::fstream f(path, ios::out | ios::binary);
-            char buf[sizeof(DiskLoc_T)];
-            char* ptr = buf;
-            DiskLoc_T sz = sizeof(DiskLoc_T);
-            int null_stat=true;
-#define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
-            write_attribute(sz);
-            write_attribute(null_stat);
-#undef write_attribute
-            f.write(buf, sizeof(buf));
-            f.close();
-        }
+        static void Init(const std::string& path) ;
     };
 }
 #endif //TICKETSYSTEM_USERMANAGER_H

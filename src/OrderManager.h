@@ -74,12 +74,7 @@ namespace t_sys {
 
         ~OrderManager();
 
-        static void Init(const std::string& path) {
-            std::fstream file(path, ios::binary | ios::out);
-            DiskLoc_T sz = sizeof(DiskLoc_T);
-            file.write((char*) &sz, sizeof(sz));
-            file.close();
-        }
+        static void Init(const std::string& path);
     };
 }
 #endif //TICKETSYSTEM_ORDERMANAGER_H

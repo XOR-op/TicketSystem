@@ -19,7 +19,7 @@ DiskLoc_T TrainManager::increaseFile(train* tra) {
     }
 }
 
-void init_subprocess(const std::string& path){
+void init_subprocess(const std::string& path) {
     std::fstream f(path, ios::out | ios::binary);
     char buf[sizeof(DiskLoc_T)];
     char* ptr = buf;
@@ -31,7 +31,7 @@ void init_subprocess(const std::string& path){
     f.close();
 }
 
-void TrainManager::Init(const std::string& file_path,const std::string& pending_path) {
+void TrainManager::Init(const std::string& file_path, const std::string& pending_path) {
     init_subprocess(file_path);
     init_subprocess(pending_path);
 }
@@ -170,7 +170,7 @@ bool TrainManager::Query_train(const trainID_t& t, int date) {//date = mmdd
     }
     return true;
 }
-bool TrainManager::Query_ticket(char* Sstation, char* Tstation, int date, int order) {
+bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int date, int order) {
     pse_std::vector<std::pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                                         stationlist[station_t(Sstation)]*10000LL+9999);
     pse_std::vector<std::pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
@@ -242,7 +242,7 @@ bool TrainManager::Query_ticket(char* Sstation, char* Tstation, int date, int or
     }
     return true;
 }
-bool TrainManager::Query_transfer(char* Sstation, char* Tstation, int date, int order) {
+bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, int date, int order) {
     pse_std::vector<std::pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                                         stationlist[station_t(Sstation)]*10000LL+9999);
     pse_std::vector<std::pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
@@ -558,4 +558,128 @@ TrainManager::~TrainManager() {
     ticketFile.write(buf2, sizeof(buf2));
     cache2.destruct();
     ticketFile.close();
+}
+void TrainManager::allocate_tickets(OrderManager* ord_manager, train* ptr, const order* Order) {
+    for (DiskLoc_T la = -1, where = ptr->ticket_head;;) {
+        auto* p = cache2.get(where);
+        bool flag = false;
+        if (p->day == Order->day) {
+            flag = true;
+            for (int j = 0; j < ptr->stationNum; j++)
+                if (p->require[j] > 0) {
+                    p->require[j] -= std::min(p->require[j], ptr->stationTicketRemains[p->day][j]);
+                    if (p->require[j] != 0)flag = false;
+                }
+        }
+        if (flag) {
+            ord_manager->setSuccess(p->block, p->offset_in_block);
+            //delete p
+            if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
+            if (where == ptr->ticket_end)ptr->ticket_end = la;
+            auto* la_p = cache2.get(la);
+            la_p->nxt = p->nxt;
+            cache2.dirty_bit_set(la);
+            cache2.remove(where);
+            where = la_p->nxt;
+        } else {
+            la = where, where = p->nxt;
+        }
+        if (where == ptr->ticket_end)break;
+    }
+}
+void TrainManager::add_pendingorder(pending_order* record, train* tra) {
+    DiskLoc_T rt = file_size2;
+    if (tra->ticket_head == -1) {
+        tra->ticket_head = tra->ticket_end = rt;
+        ticketFile.seekp(file_size2);
+        ticketFile.write((char*) record, sizeof(pending_order));
+    } else {
+        auto* tmp = cache2.get(tra->ticket_end);
+        tmp->nxt = rt;
+        cache2.dirty_bit_set(tra->ticket_end);
+        tra->ticket_end = rt;
+        ticketFile.seekp(file_size2);
+        ticketFile.write((char*) record, sizeof(pending_order));
+    }
+    file_size2 += sizeof(record);
+}
+int TrainManager::calcstartday(int date, int days) {
+    if (date%100 > days)return date-days;
+    days -= date%100;
+    if (date/100 == 9)return calcstartday(831, days);
+    if (date/100 == 8)return calcstartday(731, days);
+    if (date/100 == 7)return calcstartday(630, days);
+    if (date/100 == 6)return calcstartday(531, days);
+    return -1;
+}
+int TrainManager::calctime(int start, int end) {
+    int mm = end%100-start%100;
+    start /= 100, end /= 100;
+    if (mm < 0)mm += 60, end--;
+    int hh = end/100-start/100;
+    start /= 100, end /= 100;
+    if (hh < 0)hh += 24, end--;
+    int ddd = end-start;
+    return ddd*10000+hh*100+mm;
+}
+int TrainManager::calcdays(int start, int end) {
+    if (start/100 == end/100)return end-start;
+    else {
+        int ans = 0;
+        if (start/100 == 6)ans = 30-start%100;
+        else ans = 31-start%100;
+        for (int i = start/100+1; i < end/100; i++) {
+            if (i == 7 || i == 8 || i == 10)ans += 31;
+            else ans += 30;
+        }
+        return ans+end%100;
+    }
+}
+unsigned int TrainManager::myhash(const void* key, int len, unsigned int seed) {
+    const unsigned int m = 0x5bd1e995;
+    const int r = 24;
+    unsigned int h = seed ^len;
+    const unsigned char* data = (const unsigned char*) key;
+    while (len >= 4) {
+        unsigned int k = *(unsigned int*) data;
+        k *= m;
+        k ^= k >> r;
+        k *= m;
+        h *= m;
+        h ^= k;
+        data += 4;
+        len -= 4;
+    }
+    switch (len) {
+        case 3:
+            h ^= data[2] << 16;
+        case 2:
+            h ^= data[1] << 8;
+        case 1:
+            h ^= data[0];
+            h *= m;
+    };
+    h ^= h >> 13;
+    h *= m;
+    h ^= h >> 15;
+    return h;
+}
+int TrainManager::findtrainID(const trainID_t& t) {
+    auto rt = trainidToOffset.search(t);
+    if (rt.second)return 1;
+    else return 0;
+}
+void TrainManager::print(int x) {
+    if (x < 10)defaultOut << '0' << x;
+    else defaultOut << x;
+}
+void TrainManager::printdate(int x) {
+    print(x/100);
+    defaultOut << '-';
+    print(x%100);
+}
+void TrainManager::printtime(int x) {
+    print(x/100);
+    defaultOut << ':';
+    print(x%100);
 }

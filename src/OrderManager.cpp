@@ -132,3 +132,9 @@ void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
 #endif
     file.write((char*)s,block+sizeof(int)+sizeof(DiskLoc_T)+DATA_SIZE*offset_in_block+0,sizeof(s));
 }
+void OrderManager::Init(const std::string& path) {
+    std::fstream file(path, ios::binary | ios::out);
+    DiskLoc_T sz = sizeof(DiskLoc_T);
+    file.write((char*) &sz, sizeof(sz));
+    file.close();
+}
