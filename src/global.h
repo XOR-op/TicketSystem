@@ -6,6 +6,8 @@
 #define TICKETSYSTEM_GLOBAL_H
 #include <memory>
 #include <cassert>
+#include <fstream>
+#include <sstream>
 namespace t_sys{
     typedef std::size_t DiskLoc_T;
     typedef const char* const str_t ;
@@ -16,5 +18,9 @@ namespace t_sys{
     str_t TRAIN_TRAIN_ID_INDEX_PATH="/tmp/ticket_system/train_id.idx";
     str_t TRAIN_STATION_INDEX_PATH="/tmp/ticket_system/train_station.idx";
     str_t TRAIN_PENDING_PATH="/tmp/ticket_system/pending.db";
+#ifndef NDEBUG
+//    std::stringstream cin;
+//    void cin_fill_data();
+#endif
 }
 #endif //TICKETSYSTEM_GLOBAL_H

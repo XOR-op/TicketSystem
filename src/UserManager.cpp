@@ -101,7 +101,8 @@ bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user
               const char* passwd, const char* name, const char* mailaddr, int privilege){
     if(!is_null){
         int cur_pri=getPrivilege(*cur_user);
-        if(cur_pri==-1||cur_pri<=privilege){
+        if(!isOnline(*cur_user)||cur_pri==-1||cur_pri<=privilege||getPrivilege(*u)!=-1){
+            // check -c
             defaultOut<<"-1"<<endl;
             return false;
         }
