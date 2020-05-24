@@ -16,16 +16,17 @@ using namespace bptree;
 
 void init(){
     LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
-    LRUBPTree<long long, int>::Init(TRIAN_STATION_INDEX_PATH);
+    LRUBPTree<long long, int>::Init(TRAIN_STATION_INDEX_PATH);
     LRUBPTree<username_t, DiskLoc_T>::Init(USER_INDEX_PATH);
     UserManager::Init(USER_PATH);
-    TrainManager::Init(TRAIN_PATH);
+    TrainManager::Init(TRAIN_PATH,TRAIN_PENDING_PATH);
     OrderManager::Init(ORDER_PATH);
 }
 
 void cleanAll(){
-    remove(TRIAN_STATION_INDEX_PATH);
+    remove(TRAIN_STATION_INDEX_PATH);
     remove(TRAIN_TRAIN_ID_INDEX_PATH);
+    remove(TRAIN_PENDING_PATH);
     remove(USER_INDEX_PATH);
     remove(USER_PATH);
     remove(TRAIN_PATH);
@@ -33,9 +34,13 @@ void cleanAll(){
 }
 
 int main() {
+#ifndef NDEBUG
+    // debug only
+    cleanAll();
+#endif
     if (needInit()) init();
     auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-    auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRIAN_STATION_INDEX_PATH);
+    auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_PENDING_PATH,TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
     auto* order_mgr=new OrderManager(ORDER_PATH);
     vars binding(train_mgr,user_mgr,order_mgr);
     char buffer[16];
@@ -106,7 +111,7 @@ int main() {
                     delete order_mgr;
                     init();
                     user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-                    train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRIAN_STATION_INDEX_PATH);
+                    train_mgr=new TrainManager(TRAIN_PATH, TRAIN_PENDING_PATH,TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
                     order_mgr=new OrderManager(ORDER_PATH);
                     binding=vars(train_mgr,user_mgr,order_mgr);
                     cout<<"0"<<endl;

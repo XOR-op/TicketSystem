@@ -99,14 +99,16 @@ bool UserManager::Modify_profile(const username_t& origin,const username_t& targ
 }
 bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user, const username_t* u,
               const char* passwd, const char* name, const char* mailaddr, int privilege){
-    if(cur_user){
-
+    if(!is_null){
         int cur_pri=getPrivilege(*cur_user);
         if(cur_pri==-1||cur_pri<=privilege){
             defaultOut<<"-1"<<endl;
             return false;
         }
-    } else privilege=10;
+    } else {
+        privilege=10;
+        is_null= false;
+    }
     // construct
     user usr{};
     strcpy(usr.username.name,u->name);
@@ -136,6 +138,7 @@ UserManager::UserManager(const std::string& file_path,const std::string& usernam
     userFile.read(buf, sizeof(buf));
 #define read_attribute(ATTR) memcpy((void*)&ATTR,ptr,sizeof(ATTR));ptr+=sizeof(ATTR)
     read_attribute(file_size);
+    read_attribute(is_null);
 #undef read_attribute
 }
 
@@ -146,6 +149,7 @@ UserManager::~UserManager(){
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(file_size);
 #undef write_attribute
+    // do not write is_null is ok
     userFile.seekg(0);
     userFile.write(buf, sizeof(buf));
     cache.destruct();

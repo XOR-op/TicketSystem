@@ -18,6 +18,7 @@ namespace t_sys {
     private:
         std::fstream userFile;
         DiskLoc_T file_size;
+        int is_null;
         std::ostream& defaultOut;
         cache::LRUCache<DiskLoc_T, user> cache;
         ds::unordered_map<username_t, int> onlinePool; // username -> privilege
@@ -73,8 +74,10 @@ namespace t_sys {
             char buf[sizeof(DiskLoc_T)];
             char* ptr = buf;
             DiskLoc_T sz = sizeof(DiskLoc_T);
+            int null_stat=true;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
             write_attribute(sz);
+            write_attribute(null_stat);
 #undef write_attribute
             f.write(buf, sizeof(buf));
             f.close();

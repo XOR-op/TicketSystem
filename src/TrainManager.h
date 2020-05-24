@@ -219,11 +219,11 @@ namespace t_sys {
 
         bool Refund_ticket(UserManager* usr_manager,OrderManager* ord_manager,username_t usr,int x=1);
 
-        TrainManager(const std::string& file_path,const std::string& file_path2,const std::string& trainid_index_path,const std::string& station_index_path);
+        TrainManager(const std::string& file_path, const std::string& pending_path, const std::string& trainid_index_path, const std::string& station_index_path);
 
         ~TrainManager();
 
-        static void Init(const std::string& path);
+        static void Init(const std::string& file_path,const std::string& pending_path);
     };
 
 }

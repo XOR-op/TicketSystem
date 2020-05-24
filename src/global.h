@@ -14,6 +14,7 @@ namespace t_sys{
     str_t ORDER_PATH="/tmp/ticket_system/order_manager.db";
     str_t USER_INDEX_PATH="/tmp/ticket_system/user_manager.idx";
     str_t TRAIN_TRAIN_ID_INDEX_PATH="/tmp/ticket_system/train_id.idx";
-    str_t TRIAN_STATION_INDEX_PATH="/tmp/ticket_system/train_station.idx";
+    str_t TRAIN_STATION_INDEX_PATH="/tmp/ticket_system/train_station.idx";
+    str_t TRAIN_PENDING_PATH="/tmp/ticket_system/pending.db";
 }
 #endif //TICKETSYSTEM_GLOBAL_H
