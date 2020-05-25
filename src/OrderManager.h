@@ -19,11 +19,6 @@ namespace t_sys {
      * file structure:  BLOCK1 <- BLOCK2 <- BLOCK_HEAD
      * Block structure: nextOffset(DiskLoc_T)|size(int)|data
      */
-    struct record_block {
-        const static int count = 20;
-        int size;
-
-    };
 
     class OrderManager {
     private:

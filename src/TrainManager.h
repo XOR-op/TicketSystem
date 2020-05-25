@@ -26,7 +26,7 @@ namespace t_sys {
         int ticketnum;//1-base
         pse_std::vector<trainID_t>trainlist;
 
-        static inline unsigned int myhash( const void * key, int len, unsigned int seed );
+        static unsigned int myhash( const void * key, int len, unsigned int seed );
         struct stationhash{
             size_t operator()(const station_t ctx) const
             {

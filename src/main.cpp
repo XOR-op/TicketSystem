@@ -37,6 +37,8 @@ int main() {
 #ifndef NDEBUG
     // debug only
     cleanAll();
+    std::ifstream ifs("../testData/in2.txt");
+    cin.rdbuf(ifs.rdbuf());
 #endif
     if (needInit()) init();
     auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
