@@ -450,11 +450,10 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
             porder.key = Order.key;
             porder.block = where.first;
             porder.nxt = -1;
+            porder.num= Order.num;
+            porder.s = s;
+            porder.t = t;
             porder.offset_in_block = where.second;
-            for (int j = s; j < t; j++) {
-                porder.require[j] = num-std::min(num, ptr->stationTicketRemains[day][j]);
-                ptr->stationTicketRemains[day][j] = std::max(ptr->stationTicketRemains[day][j]-num, 0);
-            }
             add_pendingorder(&porder, ptr);
             cache.dirty_bit_set(loc);
         }
@@ -488,11 +487,11 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, OrderManager* ord_man
     }
     if (Order.stat == order::SUCCESS) {
         for (int j = s; j < t; j++)ptr->stationTicketRemains[Order.day][j] += Order.num;
+        allocate_tickets(ord_manager, ptr, &Order);
     } else {
         for (DiskLoc_T la = -1, where = ptr->ticket_head;;) {
             auto* p = cache2.get(where);
             if (p->key == Order.key) {
-                for (int j = s; j < t; j++)ptr->stationTicketRemains[Order.day][j] += Order.num-p->require[j];
                 //delete p
                 if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
                 if (where == ptr->ticket_end)ptr->ticket_end = la;
@@ -506,7 +505,6 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, OrderManager* ord_man
             else la = where, where = p->nxt;
         }
     }
-    allocate_tickets(ord_manager, ptr, &Order);
     cache.dirty_bit_set(loc);
     return true;
 }
@@ -560,18 +558,20 @@ TrainManager::~TrainManager() {
     ticketFile.close();
 }
 void TrainManager::allocate_tickets(OrderManager* ord_manager, train* ptr, const order* Order) {
-    for (DiskLoc_T la = -1, where = ptr->ticket_head;;) {
+    for (DiskLoc_T la = -1, where = ptr->ticket_head; where != -1;) {
         auto* p = cache2.get(where);
         bool flag = false;
         if (p->day == Order->day) {
             flag = true;
-            for (int j = 0; j < ptr->stationNum; j++)
-                if (p->require[j] > 0) {
-                    p->require[j] -= std::min(p->require[j], ptr->stationTicketRemains[p->day][j]);
-                    if (p->require[j] != 0)flag = false;
+            for (int j = p->s; j < p->t; j++)
+                if (p->num > ptr->stationTicketRemains[p->day][j]) {
+                    flag = false;
+                    break;
                 }
         }
         if (flag) {
+            for (int j = p->s; j < p->t; j++)
+                ptr->stationTicketRemains[p->day][j]-=p->num;
             ord_manager->setSuccess(p->block, p->offset_in_block);
             //delete p
             if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
@@ -584,7 +584,6 @@ void TrainManager::allocate_tickets(OrderManager* ord_manager, train* ptr, const
         } else {
             la = where, where = p->nxt;
         }
-        if (where == ptr->ticket_end)break;
     }
 }
 void TrainManager::add_pendingorder(pending_order* record, train* tra) {

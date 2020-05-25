@@ -91,8 +91,7 @@ namespace t_sys {
 
     struct pending_order{
         DiskLoc_T block,nxt;
-        int offset_in_block,day,key;
-        int require[101];
+        int offset_in_block,day,key,num,s,t;
     };
 
 }
