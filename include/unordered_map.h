@@ -88,8 +88,9 @@ namespace ds {
         Hash hash;
         size_t __bucket_count;
         __linked_list<Key, T>* buckets;
+        size_t sz;
     public:
-        explicit unordered_map(size_t bucket_count) : __bucket_count(bucket_count) {
+        explicit unordered_map(size_t bucket_count) : __bucket_count(bucket_count),sz(0) {
             buckets = new __linked_list<Key, T>[bucket_count];
         }
         unordered_map() : unordered_map(32) {}
@@ -108,12 +109,14 @@ namespace ds {
             if (auto ptr = ref.get(key)){
                 return ptr->second;
             } else{
+                ++sz;
                 ref.insert(key,T());
                 return ref.get(key)->second;
             }
         }
         iterator find(const Key& key) const { return iterator(buckets[hash(key)%__bucket_count].get(key)); }
-        size_t erase(const Key& key) { return buckets[hash(key)%__bucket_count].remove(key); }
+        size_t erase(const Key& key) {--sz; return buckets[hash(key)%__bucket_count].remove(key); }
+        size_t size()const {return sz;}
     };
 }
 #endif //UNORDERED_MAP_UNORDERED_MAP_H

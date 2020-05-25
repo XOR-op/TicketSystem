@@ -190,7 +190,7 @@ int parsingDateAndTime(const char* str){
 }
 
 void t_sys::add_train(vars v){
-    char station_buf[21*101],prices_buf[7*101],travelTimes_buf[6*101],stopTimes_buf[6*101],start_time[8],salesDate_buf[16];
+    char station_buf[41*101],prices_buf[7*101],travelTimes_buf[6*101],stopTimes_buf[6*101],start_time[8],salesDate_buf[16];
     trainID_t tid;
     int seatNum,stationNum;
     char type;
@@ -209,6 +209,7 @@ void t_sys::add_train(vars v){
         }
     }
     char* stations[101];
+
     int prices[101],travelTime[101],stopoverTimes[101],salesDate=parsingDateAndTime(salesDate_buf);
     splitStr(station_buf,stations);
     splitInt(travelTimes_buf,travelTime);

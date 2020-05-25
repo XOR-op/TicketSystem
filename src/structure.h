@@ -41,7 +41,7 @@ namespace t_sys {
     };
 
     struct station_t {
-        char st[21];
+        char st[41];
         station_t() {
             st[0] = '\0';
         }
@@ -62,7 +62,7 @@ namespace t_sys {
         int saleDate; //mmddmmdd
         bool releaseState;
         char type;
-        char stations[101][21];
+        char stations[101][41];
         int prices[101];
         int travelTimes[101];
         int stopoverTimes[101];

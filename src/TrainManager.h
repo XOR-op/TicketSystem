@@ -61,6 +61,7 @@ namespace t_sys {
 
 
         DiskLoc_T increaseFile(train* tra);
+        void transfer_sub_print(const std::pair<int, std::pair<int, int>>& A,int date,const char* station);
 
     public:
         enum {TIME=0,COST=1};
