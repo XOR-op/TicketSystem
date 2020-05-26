@@ -452,11 +452,6 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, OrderManager* ord_man
         defaultOut << "-1" << endl;
         return false;
     }
-    if(strcmp(usr.name,"Snowsant")==0){
-        // todo remove this
-        int i=3;
-        i--;
-    }
     auto tmp = usr_manager->getorder(ord_manager, usr, x);
     if (!tmp.first) {
         defaultOut << "-1" << endl;
