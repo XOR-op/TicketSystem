@@ -65,12 +65,11 @@ static const char* express(char* buf,int what){
     return buf;
 }
 void OrderManager::printAllOrders(std::ostream& ofs,DiskLoc_T head){
-    order buf[_order_block::COUNT];
     char str_buf[15];
     while (head!=NO_NEXT) {
         auto*ptr= getRecord(head);
         for(int i=ptr->size-1;i>=0;--i){
-            auto& ref=buf[i];
+            auto& ref=ptr->data[i];
             ofs<<(ref.stat==order::SUCCESS?"[success]":(ref.stat==order::PENDING?"[pending]":"[refunded]"))
                <<' '<<ref.trainID<<' '<<ref.from<<' '<<express(str_buf,ref.leaveTime)<<" -> "<<ref.to
                <<' '<<express(str_buf,ref.arriveTime)<<' '<<ref.price<<' '<<ref.num<<std::endl;
@@ -105,13 +104,12 @@ OrderManager::~OrderManager() {
     file.close();
 }
 std::pair<bool,order*> OrderManager::refundOrder(DiskLoc_T head, int n) {
-    order buf[_order_block::COUNT];
     int cnt=0;
     while (head!=NO_NEXT){
         auto* ptr=cache.get(head);
         if(cnt+ptr->size>=n){
             // have found
-            auto& ref=buf[ptr->size-n+cnt];
+            auto& ref=ptr->data[ptr->size-n+cnt];
             if(ref.stat!=order::REFUNDED){
                 ref.stat=order::REFUNDED;
                 cache.set_dirty_bit(head);
