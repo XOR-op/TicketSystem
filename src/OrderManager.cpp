@@ -111,9 +111,10 @@ std::pair<bool,order*> OrderManager::refundOrder(DiskLoc_T head, int n) {
             // have found
             auto& ref=ptr->data[ptr->size-n+cnt];
             if(ref.stat!=order::REFUNDED){
+                order tmp=ref;
                 ref.stat=order::REFUNDED;
                 cache.set_dirty_bit(head);
-                return std::make_pair(true,&ref);
+                return std::make_pair(true,&tmp);
             } else return std::make_pair(false, nullptr);
         }
         cnt+=ptr->size;

@@ -404,6 +404,8 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
         Order.arriveTime = arrdate*10000+getTime(ptr->travelTimes[t]);
         Order.price = ptr->prices[t]-ptr->prices[s];
         Order.num = num;
+        Order.day = day;
+        Order.key = ++ticketnum;
         strcpy(Order.trainID, tra.ID);
         strcpy(Order.from, Sstation);
         strcpy(Order.to, Tstation);
