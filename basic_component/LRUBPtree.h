@@ -164,7 +164,7 @@ namespace bptree {
         write_attribute(file_size);
         write_attribute(freelist_head);
         write_attribute(this->root);
-        file.seekg(0);
+        file.seekp(0);
         file.write(buf, sizeof(buf));
         cache.destruct();
         file.flush();

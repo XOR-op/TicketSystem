@@ -34,7 +34,7 @@ void cleanAll(){
 }
 
 int main() {
-
+#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();
@@ -126,6 +126,8 @@ int main() {
             }
         }
     }
-
+    delete user_mgr;
+    delete train_mgr;
+    delete order_mgr;
     return 0;
 }

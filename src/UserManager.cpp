@@ -145,13 +145,13 @@ UserManager::UserManager(const std::string& file_path,const std::string& usernam
 
 UserManager::~UserManager(){
     // write metadata
-    char buf[sizeof(file_size)];
+    char buf[sizeof(file_size)+sizeof(int)];
     char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(file_size);
+    write_attribute(is_null);
 #undef write_attribute
-    // do not write is_null is ok
-    userFile.seekg(0);
+    userFile.seekp(0);
     userFile.write(buf, sizeof(buf));
     cache.destruct();
     userFile.close();

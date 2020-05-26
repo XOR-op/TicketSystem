@@ -533,7 +533,7 @@ TrainManager::~TrainManager() {
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(file_size);
 #undef write_attribute
-    trainFile.seekg(0);
+    trainFile.seekp(0);
     trainFile.write(buf, sizeof(buf));
     train_cache.destruct();
     trainFile.close();
@@ -542,7 +542,7 @@ TrainManager::~TrainManager() {
 #define write_attribute(ATTR) memcpy(ptr2,(void*)&ATTR,sizeof(ATTR));ptr2+=sizeof(ATTR)
     write_attribute(file_size2);
 #undef write_attribute
-    ticketFile.seekg(0);
+    ticketFile.seekp(0);
     ticketFile.write(buf2, sizeof(buf2));
     pending_cache.destruct();
     ticketFile.close();
