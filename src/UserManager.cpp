@@ -133,7 +133,7 @@ UserManager::UserManager(const std::string& file_path,const std::string& usernam
     if(userFile.bad())
         throw std::runtime_error("UserManger:file_path can't open");
     // metadata
-    char buf[sizeof(file_size)];
+    char buf[sizeof(file_size)+sizeof(is_null)];
     char* ptr = buf;
     userFile.seekg(0);
     userFile.read(buf, sizeof(buf));
@@ -169,9 +169,9 @@ bool UserManager::Query_Order(OrderManager* order_mgr, const username_t& usr) {
 }
 void UserManager::Init(const std::string& path) {
         std::fstream f(path, ios::out | ios::binary);
-        char buf[sizeof(DiskLoc_T)];
+        char buf[sizeof(DiskLoc_T)+sizeof(int)];
         char* ptr = buf;
-        DiskLoc_T sz = sizeof(DiskLoc_T);
+        DiskLoc_T sz = sizeof(DiskLoc_T)+sizeof(int);
         int null_stat=true;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
         write_attribute(sz);
