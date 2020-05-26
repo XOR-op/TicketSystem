@@ -30,7 +30,7 @@ void PageManager::write(const char* src, DiskLoc_T offset, size_t size) {
     }
     DiskLoc_T p_offset = page_offset(offset);
     char* ptr = (char*) cache.get(p_offset);
-    cache.dirty_bit_set(p_offset);
+    cache.set_dirty_bit(p_offset);
     auto first_size = p_offset+PAGE_SIZE-offset;
     if (size <= first_size) {
         memcpy(ptr+offset-p_offset, src, size);
@@ -40,12 +40,12 @@ void PageManager::write(const char* src, DiskLoc_T offset, size_t size) {
         for (src += first_size, size -= first_size, p_offset += PAGE_SIZE;
              size >= PAGE_SIZE; src += PAGE_SIZE, size -= PAGE_SIZE, p_offset += PAGE_SIZE) {
             ptr = (char*) cache.get(p_offset);
-            cache.dirty_bit_set(p_offset);
+            cache.set_dirty_bit(p_offset);
             memcpy(ptr, src, PAGE_SIZE);
         }
         if (size > 0) {
             ptr = (char*) cache.get(p_offset);
-            cache.dirty_bit_set(p_offset);
+            cache.set_dirty_bit(p_offset);
             memcpy(ptr, src, size);
         }
     }

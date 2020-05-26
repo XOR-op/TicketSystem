@@ -102,7 +102,7 @@ namespace bptree {
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
     void LRUBPTree<KeyType,ValueType,WeakCmp>::saveNode(NodePtr node) {
-        cache.dirty_bit_set(node->offset);
+        cache.set_dirty_bit(node->offset);
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>

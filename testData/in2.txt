@@ -1642,4 +1642,4 @@ query_ticket -s 云南省昆明市 -t 浙江省永康市 -d 07-10 -p cost
 buy_ticket -u Swire -i IHEARDthatyouask -d 07-03 -n 8123 -f 贵州省福泉市 -t 吉林省龙井市 -q true
 buy_ticket -u Gravel -i LeavesofGrass -d 07-20 -n 2493 -f 浙江省瑞安市 -t 河北省晋州市 -q true
 query_order -u Platinum
-
+exit

@@ -4,7 +4,7 @@
 
 ## 缓存设计
 
-### cache::LRUCache
+### train_cache::LRUCache
 
 设计时参照了mmap的思路，将文件的对应位置的块直接映射至内存中，依赖于人工的dirty_bit_set()实现写入一致性
 
@@ -16,7 +16,7 @@
 
 若在cache里则返回对应地址，否则从磁盘中读取数据至cache中并返回
 
-##### void dirty_bit_set(DiskLoc_T offset)
+##### void set_dirty_bit(DiskLoc_T offset)
 
 手动设置块对应的dirty_bit
 

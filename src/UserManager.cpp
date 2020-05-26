@@ -3,7 +3,7 @@ using namespace t_sys;
 bool UserManager::isOnline(const username_t& user) const {
     return onlinePool.find(user)!=onlinePool.end();
 }
-std::pair<bool,order> UserManager::getorder(OrderManager* ord_manager,const username_t &user, int x) {
+std::pair<bool,order*> UserManager::getorder(OrderManager* ord_manager,const username_t &user, int x) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
     auto* ptr=cache.get(loc);
     return ord_manager->refundOrder(ptr->orderOffset,x);
@@ -11,9 +11,9 @@ std::pair<bool,order> UserManager::getorder(OrderManager* ord_manager,const user
 std::pair<DiskLoc_T,int> UserManager::addorder(OrderManager* ord_manager,const username_t &user, const order *record) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
     auto* ptr=cache.get(loc);
-    auto where=ord_manager->appendRecord(ptr->noworderOffset,record);
-    ptr->noworderOffset=where.first;
-    cache.dirty_bit_set(loc);
+    auto where=ord_manager->appendRecord(ptr->orderOffset,record);
+    ptr->orderOffset=where.first;
+    cache.set_dirty_bit(loc);
     return where;
 }
 int UserManager::getPrivilege(const username_t& user) {
@@ -93,7 +93,7 @@ bool UserManager::Modify_profile(const username_t& origin,const username_t& targ
         strcpy(ptr->name,n_name);
     if(n_mail)
         strcpy(ptr->mailAddr,n_mail);
-    cache.dirty_bit_set(loc);
+    cache.set_dirty_bit(loc);
     defaultOut<<(ptr->username.name)<<' '<<(ptr->name)<<' '<<(ptr->mailAddr)<<' '<<(ptr->privilege)<<endl;
     return true;
 }
@@ -117,7 +117,7 @@ bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user
     strcpy(usr.name,name);
     strcpy(usr.mailAddr,mailaddr);
     usr.privilege=privilege;
-    usr.orderOffset=usr.noworderOffset=ord_manager->createRecord();
+    usr.orderOffset=ord_manager->createRecord();
     // write back
     DiskLoc_T off=increaseFile(&usr);
     usernameToOffset.insert(*u,off);

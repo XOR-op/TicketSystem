@@ -17,8 +17,8 @@ namespace t_sys {
         std::fstream trainFile,ticketFile;
         DiskLoc_T file_size,file_size2;
         std::ostream& defaultOut;
-        cache::LRUCache<DiskLoc_T,train> cache;
-        cache::LRUCache<DiskLoc_T ,pending_order> cache2;
+        cache::LRUCache<DiskLoc_T,train> train_cache;
+        cache::LRUCache<DiskLoc_T ,pending_order> pending_cache;
         bptree::LRUBPTree<trainID_t,DiskLoc_T> trainidToOffset;
         bptree::LRUBPTree<long long,int> stationTotrain; //long long = stationnum+trainnum, int = k-th station
         int trainnum;//0-base

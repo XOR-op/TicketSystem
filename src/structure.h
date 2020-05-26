@@ -24,7 +24,8 @@ namespace t_sys {
         char name[21];
         char mailAddr[31];
         int privilege;
-        DiskLoc_T orderOffset,noworderOffset;
+        DiskLoc_T orderOffset;
+        size_t orderSize;
     };
 
     struct trainID_t {

@@ -79,7 +79,7 @@ namespace cache{
         DataPtr get(DiskLoc_T offset) {
             auto iter = table.find(offset);
             if (iter != table.end()) {
-                // cache hit
+                // train_cache hit
 //                __Counter.hit();
                 if (iter->second == pool[LIST_END].next) {
                     return &pool[pool[LIST_END].next].data;
@@ -95,7 +95,7 @@ namespace cache{
                 pool[block.next].prev = iter->second;
                 return &block.data;
             }
-            // cache miss
+            // train_cache miss
 //            __Counter.miss();
             if (freelist_head == LIST_END)
                 if(!remove(pool[pool[LIST_END].prev].where))
@@ -117,7 +117,7 @@ namespace cache{
         }
         // must be called manually after write
         // or you will lose your write !!!
-        void dirty_bit_set(DiskLoc_T offset){
+        void set_dirty_bit(DiskLoc_T offset){
             pool[table[offset]].dirty_page_bit= true;
         }
         void destruct(){

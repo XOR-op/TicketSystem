@@ -85,7 +85,7 @@ bool TrainManager::Delete_train(const trainID_t& t) {
         return false;
     }
     DiskLoc_T loc = trainidToOffset.search(t).first;
-    auto* ptr = cache.get(loc);
+    auto* ptr = train_cache.get(loc);
     if (ptr->releaseState) {
         defaultOut << "-1" << endl;
         return false;
@@ -96,7 +96,7 @@ bool TrainManager::Delete_train(const trainID_t& t) {
     tmp->pos = loc;
     head = tmp;
     //delete
-    cache.remove(loc);
+    train_cache.remove(loc);
     trainidToOffset.remove(t);
     defaultOut << "0" << endl;
     return true;
@@ -107,7 +107,7 @@ bool TrainManager::Release_train(const trainID_t& t) {
         return false;
     }
     DiskLoc_T loc = trainidToOffset.search(t).first;
-    auto* ptr = cache.get(loc);
+    auto* ptr = train_cache.get(loc);
     if (ptr->releaseState) {
         defaultOut << "-1" << endl;
         return false;
@@ -136,7 +136,7 @@ bool TrainManager::Release_train(const trainID_t& t) {
         if (i > 0)ptr->prices[i] += ptr->prices[i-1];
     }
     //maybe more things need to do
-    cache.dirty_bit_set(loc);
+    train_cache.set_dirty_bit(loc);
     defaultOut << "0" << endl;
     return true;
 }
@@ -146,7 +146,7 @@ bool TrainManager::Query_train(const trainID_t& t, int date) {//date = mmdd
         return false;
     }
     DiskLoc_T loc = trainidToOffset.search(t).first;
-    auto* ptr = cache.get(loc);
+    auto* ptr = train_cache.get(loc);
     int start = (ptr->saleDate)/10000;
     int end = (ptr->saleDate)%10000;
     if (date < start || date > end) {
@@ -187,7 +187,7 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
             if (S[i].second < T[j].second) {
                 trainID_t t = trainlist[S[i].first%10000];
                 DiskLoc_T loc = trainidToOffset.search(t).first;
-                auto* ptr = cache.get(loc);
+                auto* ptr = train_cache.get(loc);
                 int days = getDate(ptr->stopoverTimes[S[i].second]);
                 int startday = calcstartday(date, days);
                 int start = (ptr->saleDate)/10000;
@@ -222,7 +222,7 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
         int p = s[i];
         trainID_t tra = trainlist[Ans[p].first];
         DiskLoc_T loc = trainidToOffset.search(tra).first;
-        auto* ptr = cache.get(loc);
+        auto* ptr = train_cache.get(loc);
         int s = Ans[p].second.first/100, t = Ans[p].second.first%100;
         int days = getDate(ptr->stopoverTimes[s]);
         int startday = calcstartday(date, days);
@@ -248,7 +248,7 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
 void TrainManager::transfer_sub_print(const std::pair<int, std::pair<int, int>>& A,int date,const char* station){
     trainID_t tra = trainlist[A.first];
     DiskLoc_T loc = trainidToOffset.search(tra).first;
-    auto* ptr = cache.get(loc);
+    auto* ptr = train_cache.get(loc);
     int s = A.second.first/100, t = A.second.first%100;
     int days = getDate(ptr->stopoverTimes[s]);
     int startday = calcstartday(date, days);
@@ -282,8 +282,8 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                 //printf("%d %d %lld %lld\n",i,j,S[i].first,T[j].first);
                 trainID_t t1 = trainlist[S[i].first%10000], t2 = trainlist[T[j].first%10000];
                 DiskLoc_T loc = trainidToOffset.search(t1).first, loc2 = trainidToOffset.search(t2).first;
-                auto* ptr = cache.get(loc);
-                auto* ptr2 = cache.get(loc2);
+                auto* ptr = train_cache.get(loc);
+                auto* ptr2 = train_cache.get(loc2);
                 int days = getDate(ptr->stopoverTimes[S[i].second]);
                 int startday = calcstartday(date, days);
                 int start = (ptr->saleDate)/10000;
@@ -361,7 +361,7 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
         return false;
     }
     DiskLoc_T loc = trainidToOffset.search(tra).first;
-    auto* ptr = cache.get(loc);
+    auto* ptr = train_cache.get(loc);
     if (!ptr->releaseState || num > ptr->seatNum) {
         defaultOut << "-1" << endl;
         return false;
@@ -380,10 +380,10 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
         defaultOut << "-1" << endl;
         return false;
     }
-    int days = getDate(ptr->stopoverTimes[s]);
-    int startday = calcstartday(date, days);
-    int start = (ptr->saleDate)/10000;
-    int end = (ptr->saleDate)%10000;
+    int days = getDate(ptr->stopoverTimes[s]),
+        startday = calcstartday(date, days),
+        start = (ptr->saleDate)/10000,
+        end = (ptr->saleDate)%10000;
     if (startday < start || startday > end) {
         defaultOut << "-1" << endl;
         return false;
@@ -408,7 +408,7 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
         strcpy(Order.from, Sstation);
         strcpy(Order.to, Tstation);
         usr_manager->addorder(ord_manager, usr, &Order);
-        cache.dirty_bit_set(loc);
+        train_cache.set_dirty_bit(loc);
     } else {
         if (wait == 0) {
             defaultOut << "-1" << endl;
@@ -439,7 +439,7 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
             porder.t = t;
             porder.offset_in_block = where.second;
             add_pendingorder(&porder, ptr);
-            cache.dirty_bit_set(loc);
+            train_cache.set_dirty_bit(loc);
         }
     };
     return true;
@@ -450,15 +450,15 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, OrderManager* ord_man
         defaultOut << "-1" << endl;
         return false;
     }
-    std::pair<bool, order> tmp = usr_manager->getorder(ord_manager, usr, x);
-    if (tmp.first == false) {
+    auto tmp = usr_manager->getorder(ord_manager, usr, x);
+    if (!tmp.first) {
         defaultOut << "-1" << endl;
         return false;
     }
     defaultOut << "0" << endl;
-    order Order = tmp.second;
+    order Order = *(tmp.second);
     DiskLoc_T loc = trainidToOffset.search(trainID_t(Order.trainID)).first;
-    auto* ptr = cache.get(loc);
+    auto* ptr = train_cache.get(loc);
     int s = -1, t = -1;
     for (int i = 0; i < ptr->stationNum; i++) {
         if (strcmp(ptr->stations[i], Order.from) == 0) {
@@ -474,30 +474,30 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, OrderManager* ord_man
         allocate_tickets(ord_manager, ptr, &Order);
     } else {
         for (DiskLoc_T la = -1, where = ptr->ticket_head;;) {
-            auto* p = cache2.get(where);
+            auto* p = pending_cache.get(where);
             if (p->key == Order.key) {
                 //delete p
                 if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
                 if (where == ptr->ticket_end)ptr->ticket_end = la;
-                auto* la_p = cache2.get(la);
+                auto* la_p = pending_cache.get(la);
                 la_p->nxt = p->nxt;
-                cache2.dirty_bit_set(la);
-                cache2.remove(where);
+                pending_cache.set_dirty_bit(la);
+                pending_cache.remove(where);
                 break;
             }
             if (where == ptr->ticket_end)break;
             else la = where, where = p->nxt;
         }
     }
-    cache.dirty_bit_set(loc);
+    train_cache.set_dirty_bit(loc);
     return true;
 }
 TrainManager::TrainManager(const std::string& file_path, const std::string& pending_path,
                            const std::string& trainid_index_path, const std::string& station_index_path)
-        : cache(51, [this](DiskLoc_T off, train* tra) { loadTrain(trainFile, off, tra); },
-                [this](DiskLoc_T off, const train* tra) { saveTrain(trainFile, off, tra); }),
-          cache2(71, [this](DiskLoc_T off, pending_order* po) { loadpendingorder(ticketFile, off, po); },
-                 [this](DiskLoc_T off, const pending_order* po) { savependingorder(trainFile, off, po); }),
+        : train_cache(51, [this](DiskLoc_T off, train* tra) { loadTrain(trainFile, off, tra); },
+                      [this](DiskLoc_T off, const train* tra) { saveTrain(trainFile, off, tra); }),
+          pending_cache(71, [this](DiskLoc_T off, pending_order* po) { loadpendingorder(ticketFile, off, po); },
+                        [this](DiskLoc_T off, const pending_order* po) { savependingorder(trainFile, off, po); }),
           trainidToOffset(trainid_index_path, 107),
           stationTotrain(station_index_path, 157),
           head(NULL), defaultOut(std::cout), trainnum(0), stationnum(0), ticketnum(0) {
@@ -529,7 +529,7 @@ TrainManager::~TrainManager() {
 #undef write_attribute
     trainFile.seekg(0);
     trainFile.write(buf, sizeof(buf));
-    cache.destruct();
+    train_cache.destruct();
     trainFile.close();
     char buf2[sizeof(file_size2)];
     char* ptr2 = buf2;
@@ -538,12 +538,12 @@ TrainManager::~TrainManager() {
 #undef write_attribute
     ticketFile.seekg(0);
     ticketFile.write(buf2, sizeof(buf2));
-    cache2.destruct();
+    pending_cache.destruct();
     ticketFile.close();
 }
 void TrainManager::allocate_tickets(OrderManager* ord_manager, train* ptr, const order* Order) {
     for (DiskLoc_T la = -1, where = ptr->ticket_head; where != -1;) {
-        auto* p = cache2.get(where);
+        auto* p = pending_cache.get(where);
         bool flag = false;
         if (p->day == Order->day) {
             flag = true;
@@ -560,10 +560,10 @@ void TrainManager::allocate_tickets(OrderManager* ord_manager, train* ptr, const
             //delete p
             if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
             if (where == ptr->ticket_end)ptr->ticket_end = la;
-            auto* la_p = cache2.get(la);
+            auto* la_p = pending_cache.get(la);
             la_p->nxt = p->nxt;
-            cache2.dirty_bit_set(la);
-            cache2.remove(where);
+            pending_cache.set_dirty_bit(la);
+            pending_cache.remove(where);
             where = la_p->nxt;
         } else {
             la = where, where = p->nxt;
@@ -577,9 +577,9 @@ void TrainManager::add_pendingorder(pending_order* record, train* tra) {
         ticketFile.seekp(file_size2);
         ticketFile.write((char*) record, sizeof(pending_order));
     } else {
-        auto* tmp = cache2.get(tra->ticket_end);
+        auto* tmp = pending_cache.get(tra->ticket_end);
         tmp->nxt = rt;
-        cache2.dirty_bit_set(tra->ticket_end);
+        pending_cache.set_dirty_bit(tra->ticket_end);
         tra->ticket_end = rt;
         ticketFile.seekp(file_size2);
         ticketFile.write((char*) record, sizeof(pending_order));

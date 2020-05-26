@@ -19,26 +19,32 @@ namespace t_sys {
      * file structure:  BLOCK1 <- BLOCK2 <- BLOCK_HEAD
      * Block structure: nextOffset(DiskLoc_T)|size(int)|data
      */
+    struct _order_block{
+        const static int COUNT = 20;
+        DiskLoc_T nextOffset;
+        int size;
+        order data[COUNT];
+    };
 
     class OrderManager {
     private:
         const static int DATA_SIZE = sizeof(order);
-        const static int count = 20;
         const static DiskLoc_T NO_NEXT = 0;
 //        std::fstream file;
-        PageManager file;
+        std::fstream file;
+        cache::LRUCache<DiskLoc_T,_order_block> cache;
         DiskLoc_T file_size;
 
         DiskLoc_T extend(const order* record, DiskLoc_T where);
 
+        static void readBlock(std::fstream& ifs,DiskLoc_T where,_order_block* ptr);
+        static void writeBlock(std::fstream& ofs,DiskLoc_T where,const _order_block* ptr);
+
     public:
         /*
-         * ptr should be guaranteed to be big enough
-         *
-         * @return: size of the block
-         * @modify: where will be pointed to next offset
+         * warning: returned pointer may fail after several operations
          */
-        int getRecord(DiskLoc_T* where, order* ptr);
+        _order_block* getRecord(DiskLoc_T where);
 
         /*
          * if offset_val is not null, where it points will become the offset in the block
@@ -61,7 +67,7 @@ namespace t_sys {
         /*
          * @return: whether the operation succeeds
          */
-        std::pair<bool,order> refundOrder(DiskLoc_T head, int n);
+        std::pair<bool,order*> refundOrder(DiskLoc_T head, int n);
 
         void setSuccess(DiskLoc_T block,int offset_in_block);
 
