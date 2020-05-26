@@ -34,7 +34,7 @@ void cleanAll(){
 }
 
 int main() {
-#define NDEBUG
+//#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();

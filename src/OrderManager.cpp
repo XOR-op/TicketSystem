@@ -3,14 +3,14 @@ using namespace t_sys;
 /*
  * fill file with record and return the block's offset
  */
-DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T where) {
+DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     // construct buffer
     char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
     char* buf = buffer;
     int size = (record != nullptr);
     assert(size>=0&&size<=1);
 # define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
-    write_attribute(where);
+    write_attribute(nextOffset);
     write_attribute(size);
     if (record) {
         write_attribute(*record);
@@ -18,8 +18,9 @@ DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T where) {
 #undef write_attribute
     // write buffer
     file.seekp(file_size);
+
     file.write(buffer, sizeof(buffer));
-    where = file_size;
+    DiskLoc_T where = file_size;
     file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*_order_block::COUNT;
     return where;
 }
@@ -28,11 +29,11 @@ _order_block* OrderManager::getRecord(DiskLoc_T where) {
     return cache.get(where);
 }
 
-std::pair<DiskLoc_T,int> OrderManager::appendRecord(DiskLoc_T where, const order* record,int* offset_val) {
+std::pair<DiskLoc_T,int> OrderManager::appendRecord(DiskLoc_T where, const order* record) {
     auto* ptr=cache.get(where);
     if (ptr->size == _order_block::COUNT) {
         // extend
-        return {extend(record, where),1};
+        return {extend(record, where),1}; // 1-based?
     } else {
         ptr->data[ptr->size]=*record;
         ptr->size+=1;
@@ -103,7 +104,7 @@ OrderManager::~OrderManager() {
     cache.destruct();
     file.close();
 }
-std::pair<bool,order*> OrderManager::refundOrder(DiskLoc_T head, int n) {
+std::pair<bool,order> OrderManager::refundOrder(DiskLoc_T head, int n) {
     int cnt=0;
     while (head!=NO_NEXT){
         auto* ptr=cache.get(head);
@@ -114,13 +115,13 @@ std::pair<bool,order*> OrderManager::refundOrder(DiskLoc_T head, int n) {
                 order tmp=ref;
                 ref.stat=order::REFUNDED;
                 cache.set_dirty_bit(head);
-                return std::make_pair(true,&tmp);
-            } else return std::make_pair(false, nullptr);
+                return std::make_pair(true,tmp);
+            } else return std::make_pair(false, order());
         }
         cnt+=ptr->size;
         head=ptr->nextOffset;
     }
-    return std::make_pair(false, nullptr);
+    return std::make_pair(false, order());
 }
 
 void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {

@@ -463,7 +463,7 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, OrderManager* ord_man
         return false;
     }
     defaultOut << "0" << endl;
-    order Order = *(tmp.second);
+    order& Order = (tmp.second);
     DiskLoc_T loc = trainidToOffset.search(trainID_t(Order.trainID)).first;
     auto* ptr = train_cache.get(loc);
     int s = -1, t = -1;
@@ -551,6 +551,7 @@ TrainManager::~TrainManager() {
 }
 void TrainManager::allocate_tickets(OrderManager* ord_manager, train* ptr, const order* Order) {
     for (DiskLoc_T la = -1, where = ptr->ticket_head; where != -1;) {
+        assert(where);
         auto* p = pending_cache.get(where);
         bool flag = false;
         if (p->day == Order->day) {

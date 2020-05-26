@@ -3,7 +3,7 @@ using namespace t_sys;
 bool UserManager::isOnline(const username_t& user) const {
     return onlinePool.find(user)!=onlinePool.end();
 }
-std::pair<bool,order*> UserManager::getorder(OrderManager* ord_manager,const username_t &user, int x) {
+std::pair<bool,order> UserManager::getorder(OrderManager* ord_manager,const username_t &user, int x) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
     auto* ptr=cache.get(loc);
     return ord_manager->refundOrder(ptr->orderOffset,x);

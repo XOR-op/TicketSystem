@@ -51,7 +51,7 @@ namespace t_sys {
          *
          * @return: current head offset
          */
-        std::pair<DiskLoc_T,int> appendRecord(DiskLoc_T where, const order* record,int* offset_val= nullptr);
+        std::pair<DiskLoc_T,int> appendRecord(DiskLoc_T where, const order* record);
 
         /*
          * @return: current head offset
@@ -67,7 +67,7 @@ namespace t_sys {
         /*
          * @return: whether the operation succeeds
          */
-        std::pair<bool,order*> refundOrder(DiskLoc_T head, int n);
+        std::pair<bool,order> refundOrder(DiskLoc_T head, int n);
 
         void setSuccess(DiskLoc_T block,int offset_in_block);
 
