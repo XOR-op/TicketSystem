@@ -212,6 +212,7 @@ void t_sys::add_train(vars v){
 
     int prices[101],travelTime[101],stopoverTimes[101],salesDate=parsingDateAndTime(salesDate_buf);
     splitStr(station_buf,stations);
+    splitInt(prices_buf,prices);
     splitInt(travelTimes_buf,travelTime);
     splitInt(stopTimes_buf,stopoverTimes);
     v.train_mgr->Add_train(tid,stationNum,seatNum,stations,prices,TrainManager::parsingTime(start_time),travelTime,stopoverTimes,salesDate,type);
