@@ -5,16 +5,16 @@ bool UserManager::isOnline(const username_t& user) const {
 }
 std::pair<bool,order> UserManager::getorder(OrderManager* ord_manager,const username_t &user, int x) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
-    auto* ptr=cache.get(loc);
+    auto* ptr=user_cache.get(loc);
     return ord_manager->refundOrder(ptr->orderOffset,x);
 }
 std::pair<DiskLoc_T,int> UserManager::addorder(OrderManager* ord_manager,const username_t &user, const order *record) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
-    auto* ptr=cache.get(loc);
-    auto where=ord_manager->appendRecord(ptr->orderOffset,record);
-    ptr->orderOffset=where.first;
-    ptr->orderSize+=1;
-    cache.set_dirty_bit(loc);
+    auto* user_ptr=user_cache.get(loc);
+    auto where=ord_manager->appendRecord(user_ptr->orderOffset, record);
+    user_ptr->orderOffset=where.first;
+    user_ptr->orderSize+=1;
+    user_cache.set_dirty_bit(loc);
     return where;
 }
 int UserManager::getPrivilege(const username_t& user) {
@@ -24,7 +24,7 @@ int UserManager::getPrivilege(const username_t& user) {
     } else{
         auto rt=usernameToOffset.search(user);
         if(rt.second){
-            auto* ptr=cache.get(rt.first);
+            auto* ptr=user_cache.get(rt.first);
             return ptr->privilege;
         } else{
             // not found
@@ -43,7 +43,7 @@ bool UserManager::Login(const username_t& user,const char* passwd){
     if(onlinePool.find(user)==onlinePool.end()){
         auto par=usernameToOffset.search(user);
         if(par.second) {
-            auto* ptr = cache.get(par.first);
+            auto* ptr = user_cache.get(par.first);
             if(!strcmp(ptr->password,passwd)){
                 onlinePool[user]=ptr->privilege;
                 defaultOut<<"0"<<endl;
@@ -70,8 +70,8 @@ bool UserManager::Query_profile(const username_t& origin, const username_t& targ
         return false;
     }
     DiskLoc_T loc=usernameToOffset.search(target).first;
-    auto* ptr=cache.get(loc);
-    defaultOut<<(ptr->username.name)<<' '<<(ptr->name)<<' '<<(ptr->mailAddr)<<' '<<(ptr->privilege)<<endl;
+    auto* user_ptr=user_cache.get(loc);
+    defaultOut << (user_ptr->username.name) << ' ' << (user_ptr->name) << ' ' << (user_ptr->mailAddr) << ' ' << (user_ptr->privilege) << endl;
     return true;
 }
 bool UserManager::Modify_profile(const username_t& origin,const username_t& target,
@@ -81,22 +81,22 @@ bool UserManager::Modify_profile(const username_t& origin,const username_t& targ
         return false;
     }
     DiskLoc_T loc=usernameToOffset.search(target).first;
-    auto* ptr=cache.get(loc);
+    auto* user_ptr=user_cache.get(loc);
     if(n_privilege) {
         if(*n_privilege>=getPrivilege(origin)){
             defaultOut<<"-1"<<endl;
             return false;
         }
-        ptr->privilege = *n_privilege;
+        user_ptr->privilege = *n_privilege;
     }
     if(n_passed)
-        strcpy(ptr->password,n_passed);
+        strcpy(user_ptr->password, n_passed);
     if(n_name)
-        strcpy(ptr->name,n_name);
+        strcpy(user_ptr->name, n_name);
     if(n_mail)
-        strcpy(ptr->mailAddr,n_mail);
-    cache.set_dirty_bit(loc);
-    defaultOut<<(ptr->username.name)<<' '<<(ptr->name)<<' '<<(ptr->mailAddr)<<' '<<(ptr->privilege)<<endl;
+        strcpy(user_ptr->mailAddr, n_mail);
+    user_cache.set_dirty_bit(loc);
+    defaultOut << (user_ptr->username.name) << ' ' << (user_ptr->name) << ' ' << (user_ptr->mailAddr) << ' ' << (user_ptr->privilege) << endl;
     return true;
 }
 bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user, const username_t* u,
@@ -128,41 +128,41 @@ bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user
     return true;
 }
 UserManager::UserManager(const std::string& file_path,const std::string& username_index_path)
-        :cache(51,[this](DiskLoc_T off,user* usr){loadUser(userFile,off,usr);},
-               [this](DiskLoc_T off,const user* usr){saveUser(userFile,off,usr);}),
-         usernameToOffset(username_index_path,107),defaultOut(std::cout)
+        : user_cache(51, [this](DiskLoc_T off, user* usr){loadUser(userFile, off, usr);},
+                     [this](DiskLoc_T off,const user* usr){saveUser(userFile,off,usr);}),
+          usernameToOffset(username_index_path,107), defaultOut(std::cout)
 {
     userFile.open(file_path);
     if(userFile.bad())
         throw std::runtime_error("UserManger:file_path can't open");
     // metadata
-    char buf[sizeof(file_size)+sizeof(is_null)];
+    char buf[sizeof(user_file_size)+sizeof(is_null)];
     char* ptr = buf;
     userFile.seekg(0);
     userFile.read(buf, sizeof(buf));
 #define read_attribute(ATTR) memcpy((void*)&ATTR,ptr,sizeof(ATTR));ptr+=sizeof(ATTR)
-    read_attribute(file_size);
+    read_attribute(user_file_size);
     read_attribute(is_null);
 #undef read_attribute
 }
 
 UserManager::~UserManager(){
     // write metadata
-    char buf[sizeof(file_size)+sizeof(int)];
+    char buf[sizeof(user_file_size)+sizeof(int)];
     char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
-    write_attribute(file_size);
+    write_attribute(user_file_size);
     write_attribute(is_null);
 #undef write_attribute
     userFile.seekp(0);
     userFile.write(buf, sizeof(buf));
-    cache.destruct();
+    user_cache.destruct();
     userFile.close();
 }
 bool UserManager::Query_Order(OrderManager* order_mgr, const username_t& usr) {
     if(isOnline(usr)){
         auto pair=usernameToOffset.search(usr);
-        auto* ptr=cache.get(pair.first);
+        auto* ptr=user_cache.get(pair.first);
         defaultOut<<ptr->orderSize<<endl;
         order_mgr->printAllOrders(defaultOut,ptr->orderOffset);
         return true;

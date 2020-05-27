@@ -17,10 +17,10 @@ namespace t_sys {
     class UserManager {
     private:
         std::fstream userFile;
-        DiskLoc_T file_size;
+        DiskLoc_T user_file_size;
         int is_null;
         std::ostream& defaultOut;
-        cache::LRUCache<DiskLoc_T, user> cache;
+        cache::LRUCache<DiskLoc_T, user> user_cache;
         ds::unordered_map<username_t, int> onlinePool; // username -> privilege
         bptree::LRUBPTree<username_t, DiskLoc_T> usernameToOffset;
 
@@ -33,10 +33,10 @@ namespace t_sys {
             ofs.write((char*) usr, sizeof(user));
         }
         DiskLoc_T increaseFile(const user* usr) {
-            DiskLoc_T rt = file_size;
-            userFile.seekp(file_size);
+            DiskLoc_T rt = user_file_size;
+            userFile.seekp(user_file_size);
             userFile.write((char*) usr, sizeof(user));
-            file_size += sizeof(user);
+            user_file_size += sizeof(user);
             return rt;
         }
 

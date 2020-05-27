@@ -17,28 +17,28 @@ DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     }
 #undef write_attribute
     // write buffer
-    file.seekp(file_size);
+    file.seekp(order_file_size);
 
     file.write(buffer, sizeof(buffer));
-    DiskLoc_T where = file_size;
-    file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*_order_block::COUNT;
+    DiskLoc_T where = order_file_size;
+    order_file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*_order_block::COUNT;
     return where;
 }
 
 _order_block* OrderManager::getRecord(DiskLoc_T where) {
-    return cache.get(where);
+    return order_block_cache.get(where);
 }
 
 std::pair<DiskLoc_T,int> OrderManager::appendRecord(DiskLoc_T where, const order* record) {
-    auto* ptr=cache.get(where);
-    if (ptr->size == _order_block::COUNT) {
+    auto* block_ptr=order_block_cache.get(where);
+    if (block_ptr->size == _order_block::COUNT) {
         // extend
         return {extend(record, where),1}; // 1-based?
     } else {
-        ptr->data[ptr->size]=*record;
-        ptr->size+=1;
-        cache.set_dirty_bit(where);
-        return {where,ptr->size};
+        block_ptr->data[block_ptr->size]=*record;
+        block_ptr->size+=1;
+        order_block_cache.set_dirty_bit(where);
+        return {where, block_ptr->size};
     }
 }
 
@@ -79,55 +79,55 @@ void OrderManager::printAllOrders(std::ostream& ofs,DiskLoc_T head){
     }
 }
 
-OrderManager::OrderManager(const std::string& file_path):cache(107,
-        [this](DiskLoc_T where,_order_block* blk){readBlock(file,where,blk);},
-        [this](DiskLoc_T where,const _order_block* blk){writeBlock(file,where,blk);}){
+OrderManager::OrderManager(const std::string& file_path): order_block_cache(107,
+                                                                            [this](DiskLoc_T where,_order_block* blk){readBlock(file,where,blk);},
+                                                                            [this](DiskLoc_T where,const _order_block* blk){writeBlock(file,where,blk);}){
     file.open(file_path,ios::binary|ios::in|ios::out);
     // read metadata
-    char buf[sizeof(file_size)];
+    char buf[sizeof(order_file_size)];
     char* ptr = buf;
     file.seekg(0);
     file.read(buf,sizeof(buf));
 #define read_attribute(ATTR) memcpy((void*)&ATTR,ptr,sizeof(ATTR));ptr+=sizeof(ATTR)
-    read_attribute(file_size);
+    read_attribute(order_file_size);
 #undef read_attribute
 }
 
 OrderManager::~OrderManager() {
-    char buf[sizeof(file_size)];
+    char buf[sizeof(order_file_size)];
     char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
-    write_attribute(file_size);
+    write_attribute(order_file_size);
 #undef write_attribute
     file.seekp(0);
     file.write(buf,sizeof(buf));
-    cache.destruct();
+    order_block_cache.destruct();
     file.close();
 }
 std::pair<bool,order> OrderManager::refundOrder(DiskLoc_T head, int n) {
     int cnt=0;
     while (head!=NO_NEXT){
-        auto* ptr=cache.get(head);
-        if(cnt+ptr->size>=n){
+        auto* block_ptr=order_block_cache.get(head);
+        if(cnt+block_ptr->size >= n){
             // have found
-            auto& ref=ptr->data[ptr->size-n+cnt];
+            auto& ref=block_ptr->data[block_ptr->size-n+cnt];
             if(ref.stat!=order::REFUNDED){
                 order tmp=ref;
                 ref.stat=order::REFUNDED;
-                cache.set_dirty_bit(head);
+                order_block_cache.set_dirty_bit(head);
                 return std::make_pair(true,tmp);
             } else return std::make_pair(false, order());
         }
-        cnt+=ptr->size;
-        head=ptr->nextOffset;
+        cnt+=block_ptr->size;
+        head=block_ptr->nextOffset;
     }
     return std::make_pair(false, order());
 }
 
 void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
-    auto* ptr=cache.get(block);
-    ptr->data[offset_in_block].stat=order::SUCCESS;
-    cache.set_dirty_bit(block);
+    auto* block_ptr=order_block_cache.get(block);
+    block_ptr->data[offset_in_block].stat=order::SUCCESS;
+    order_block_cache.set_dirty_bit(block);
 }
 
 void OrderManager::Init(const std::string& path) {

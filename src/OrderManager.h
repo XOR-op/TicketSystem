@@ -32,8 +32,8 @@ namespace t_sys {
         const static DiskLoc_T NO_NEXT = 0;
 //        std::fstream file;
         std::fstream file;
-        cache::LRUCache<DiskLoc_T,_order_block> cache;
-        DiskLoc_T file_size;
+        cache::LRUCache<DiskLoc_T,_order_block> order_block_cache;
+        DiskLoc_T order_file_size;
 
         DiskLoc_T extend(const order* record, DiskLoc_T where);
 

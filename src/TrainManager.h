@@ -15,7 +15,7 @@ namespace t_sys {
     class TrainManager{
     private:
         std::fstream trainFile,ticketFile;
-        DiskLoc_T file_size,file_size2;
+        DiskLoc_T train_file_size,ticket_file_size;
         std::ostream& defaultOut;
         cache::LRUCache<DiskLoc_T,train> train_cache;
         cache::LRUCache<DiskLoc_T ,pending_order> pending_cache;
