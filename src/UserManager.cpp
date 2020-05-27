@@ -13,6 +13,7 @@ std::pair<DiskLoc_T,int> UserManager::addorder(OrderManager* ord_manager,const u
     auto* ptr=cache.get(loc);
     auto where=ord_manager->appendRecord(ptr->orderOffset,record);
     ptr->orderOffset=where.first;
+    ptr->orderSize+=1;
     cache.set_dirty_bit(loc);
     return where;
 }
@@ -33,9 +34,10 @@ int UserManager::getPrivilege(const username_t& user) {
 }
 bool UserManager::privilegeCompare(const username_t& origin, const username_t& target){
     // do not check online
+    // p_ori>p_tar or ori==tar
     // return true implies that both users exist while not necessarily online
     int p=getPrivilege(origin),q=getPrivilege(target);
-    return (p==-1||q==-1)? false:p>=q;
+    return (p==-1||q==-1)? false:p>q||origin==target;
 }
 bool UserManager::Login(const username_t& user,const char* passwd){
     if(onlinePool.find(user)==onlinePool.end()){
@@ -118,6 +120,7 @@ bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user
     strcpy(usr.mailAddr,mailaddr);
     usr.privilege=privilege;
     usr.orderOffset=ord_manager->createRecord();
+    usr.orderSize=0;
     // write back
     DiskLoc_T off=increaseFile(&usr);
     usernameToOffset.insert(*u,off);
@@ -160,6 +163,7 @@ bool UserManager::Query_Order(OrderManager* order_mgr, const username_t& usr) {
     if(isOnline(usr)){
         auto pair=usernameToOffset.search(usr);
         auto* ptr=cache.get(pair.first);
+        defaultOut<<ptr->orderSize<<endl;
         order_mgr->printAllOrders(defaultOut,ptr->orderOffset);
         return true;
     } else{

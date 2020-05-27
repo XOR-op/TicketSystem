@@ -70,13 +70,6 @@ namespace t_sys {
         void printdate(int x);
         void printtime(int x);
 
-        int getDate(const int x){
-            return x/10000;
-        }
-
-        int getTime(const int x){
-            return x%10000;
-        }
 
         static int parsingDate(const char* str){
             // str guaranteed be 5+1 long

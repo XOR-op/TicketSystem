@@ -1,6 +1,13 @@
 #include "TrainManager.h"
 
 using namespace t_sys;
+int getDate(const int x){
+    return x/10000;
+}
+
+int getTime(const int x){
+    return x%10000;
+}
 DiskLoc_T TrainManager::increaseFile(train* tra) {
     if (head == NULL) {
         DiskLoc_T rt = file_size;
