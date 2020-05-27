@@ -174,7 +174,7 @@ bool TrainManager::Query_train(const trainID_t& t, int date) {//date = mmdd
         else printdate(date), defaultOut << ' ', printtime(getTime(ptr->stopoverTimes[i]));
         addtime(date, tmp, 24*60*(getDate(ptr->travelTimes[i+1])-getDate(ptr->stopoverTimes[i])));
         if (i == 0)defaultOut << " 0";
-        else defaultOut << ' ' << (ptr->prices[i])-(ptr->prices[i-1]);
+        else defaultOut << ' ' << (ptr->prices[i]);
         if (i == (ptr->stationNum)-1)defaultOut << " x" << endl;
         else defaultOut << ' ' << (ptr->stationTicketRemains[kday][i]) << endl;
     }
