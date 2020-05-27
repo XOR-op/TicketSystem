@@ -16,7 +16,7 @@ void t_sys::query_profile(vars v){
 }
 
 void t_sys::query_ticket(vars v){
-    char date[8],p[8],start[24],to[24];
+    char date[8],p[8],start[42],to[42];
     p[0]='t';
     while (cin.get()!='\n'){
         switch (getOption()) {
@@ -30,7 +30,7 @@ void t_sys::query_ticket(vars v){
 }
 
 void t_sys::query_transfer(vars v){
-    char date[8],p[8],start[24],to[24];
+    char date[8],p[8],start[42],to[42];
     p[0]='t';
     while (cin.get()!='\n'){
         switch (getOption()) {
