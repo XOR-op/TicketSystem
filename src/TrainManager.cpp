@@ -116,8 +116,8 @@ bool TrainManager::Release_train(const trainID_t& t) {
     DiskLoc_T loc = trainidToOffset.search(t).first;
     auto* ptr = train_cache.get(loc);
     if (ptr->releaseState) {
-        defaultOut << "-1" << endl;
-        return false;
+        defaultOut << "0" << endl;
+        return true;
     }
     ptr->releaseState = true;
     trainlist.push_back(ptr->trainID);
