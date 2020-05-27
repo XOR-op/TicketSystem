@@ -400,7 +400,7 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
         Order.stat = order::SUCCESS;
         Order.leaveTime = date*10000+getTime(ptr->stopoverTimes[s]);
         int arrdate = date, tmp = 0;
-        addtime(arrdate, tmp, 24*60*(getDate(ptr->travelTimes[t])-getDate(ptr->stopoverTimes[t])));
+        addtime(arrdate, tmp, 24*60*(getDate(ptr->travelTimes[t])-getDate(ptr->stopoverTimes[s])));
         Order.arriveTime = arrdate*10000+getTime(ptr->travelTimes[t]);
         Order.price = ptr->prices[t]-ptr->prices[s];
         Order.num = num;
@@ -421,7 +421,7 @@ bool TrainManager::Buy_ticket(UserManager* usr_manager, OrderManager* ord_manage
             Order.stat = order::PENDING;
             Order.leaveTime = date*10000+getTime(ptr->stopoverTimes[s]);
             int arrdate = date, tmp = 0;
-            addtime(arrdate, tmp, 24*60*(getDate(ptr->travelTimes[t])-getDate(ptr->stopoverTimes[t])));
+            addtime(arrdate, tmp, 24*60*(getDate(ptr->travelTimes[t])-getDate(ptr->stopoverTimes[s])));
             Order.arriveTime = arrdate*10000+getTime(ptr->travelTimes[t]);
             Order.price = ptr->prices[t]-ptr->prices[s];
             Order.num = num;
