@@ -214,6 +214,7 @@ void t_sys::add_train(vars v){
     splitStr(station_buf,stations);
     splitInt(prices_buf,prices);
     splitInt(travelTimes_buf,travelTime);
-    splitInt(stopTimes_buf,stopoverTimes);
+    if(stationNum>2)
+        splitInt(stopTimes_buf,stopoverTimes);
     v.train_mgr->Add_train(tid,stationNum,seatNum,stations,prices,TrainManager::parsingTime(start_time),travelTime,stopoverTimes,salesDate,type);
 }

@@ -134,13 +134,13 @@ bool TrainManager::Release_train(const trainID_t& t) {
     int date = 0, tim = train_ptr->startTime;
     for (int i = 0; i < train_ptr->stationNum; i++) {
         int tmp = train_ptr->travelTimes[i];
-        if (i == 0)train_ptr->travelTimes[i] = 0;
-        else train_ptr->travelTimes[i] = date*10000+tim;
-        if (i != 0 && i != (train_ptr->stationNum)-1)addtime(date, tim, train_ptr->stopoverTimes[i]);
-        if (i == (train_ptr->stationNum)-1)train_ptr->stopoverTimes[i] = 0;
-        else train_ptr->stopoverTimes[i] = date*10000+tim;
+        train_ptr->travelTimes[i] =(i==0)?0: date*10000+tim;
+        if (i != 0 && i != (train_ptr->stationNum)-1)
+            addtime(date, tim, train_ptr->stopoverTimes[i]);
+        train_ptr->stopoverTimes[i] =(i == (train_ptr->stationNum)-1)?0: date*10000+tim;
         addtime(date, tim, tmp);
-        if (i > 0)train_ptr->prices[i] += train_ptr->prices[i-1];
+        if (i > 0)
+            train_ptr->prices[i] += train_ptr->prices[i-1];
     }
     //maybe more things need to do
     train_cache.set_dirty_bit(loc);
@@ -235,6 +235,7 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
         int startday = calcstartday(date, days);
         int start = (train_ptr->saleDate)/10000;
         int end = (train_ptr->saleDate)%10000;
+
         defaultOut << (train_ptr->trainID.ID) << ' ' << Sstation << ' ';
         printdate(date);
         defaultOut << ' ';
