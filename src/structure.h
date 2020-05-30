@@ -7,29 +7,30 @@
 
 #include <cstdint>
 #include <cstring>
+#include "global.h"
 #include "../include/unordered_map.h"
 
 namespace t_sys {
     typedef uint64_t DiskLoc_T;
 
     struct username_t {
-        char name[21];
+        char name[l_str(USER_NAME_LEN)];
         bool operator<(const username_t& rhs) const { return strcmp(name, rhs.name) < 0; }
         bool operator==(const username_t& rhs) const { return !strcmp(name, rhs.name); }
     };
 
     struct user {
         username_t username;
-        char password[31];
-        char name[21];
-        char mailAddr[31];
+        char password[l_str(PASSWORD_LEN)];
+        char name[l_han(NAME_LEN)];
+        char mailAddr[l_str(MAIL_ADDR_LEN)];
         int privilege;
         DiskLoc_T orderOffset;
         size_t orderSize;
     };
 
     struct trainID_t {
-        char ID[21];
+        char ID[l_str(TRAIN_ID_LEN)];
         trainID_t() {
             ID[0] = '\0';
         }
@@ -42,7 +43,7 @@ namespace t_sys {
     };
 
     struct station_t {
-        char st[41];
+        char st[l_han(STATIONS_LEN)];
         station_t() {
             st[0] = '\0';
         }
@@ -63,10 +64,10 @@ namespace t_sys {
         int saleDate; //mmddmmdd
         bool releaseState;
         char type;
-        char stations[101][41];
-        int prices[101];
-        int travelTimes[101];
-        int stopoverTimes[101];
+        char stations[STATION_NUM][l_han(STATIONS_LEN)];
+        int prices[STATION_NUM];
+        int travelTimes[STATION_NUM];
+        int stopoverTimes[STATION_NUM];
         DiskLoc_T ticket_head,ticket_end;
         //release时，travelTimes[]、stopoverTimes[] 将会做一个前缀和，也就是变成每个站的离开时间和到达时间
         //形式为dddmmss,ddd是天没有月的概念，始发站为0

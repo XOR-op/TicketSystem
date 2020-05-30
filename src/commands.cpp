@@ -16,7 +16,7 @@ void t_sys::query_profile(vars v){
 }
 
 void t_sys::query_ticket(vars v){
-    char date[8],p[8],start[42],to[42];
+    char date[8],p[8],start[l_han(STATIONS_LEN)],to[l_han(STATIONS_LEN)];
     p[0]='t';
     while (cin.get()!='\n'){
         switch (getOption()) {
@@ -30,7 +30,7 @@ void t_sys::query_ticket(vars v){
 }
 
 void t_sys::query_transfer(vars v){
-    char date[8],p[8],start[42],to[42];
+    char date[8],p[8],start[l_han(STATIONS_LEN)],to[l_han(STATIONS_LEN)];
     p[0]='t';
     while (cin.get()!='\n'){
         switch (getOption()) {
@@ -46,7 +46,7 @@ void t_sys::query_transfer(vars v){
 
 void t_sys::login(vars v){
     username_t username;
-    char passwd[32],c;
+    char passwd[l_str(PASSWORD_LEN)],c;
     RANGE(2) {
         c = getOption();
         if (c == 'u') {
@@ -145,7 +145,7 @@ void t_sys::refund_ticket(vars v){
 void t_sys::buy_ticket(vars v){
     username_t usr;
     trainID_t tid;
-    char date[8],from[24],to[24],q[8];
+    char date[8],from[l_han(STATIONS_LEN)],to[l_han(STATIONS_LEN)],q[8];
     int n;
     q[0]='f';
     while (cin.get()!='\n'){
@@ -190,7 +190,7 @@ int parsingDateAndTime(const char* str){
 }
 
 void t_sys::add_train(vars v){
-    char station_buf[41*101],prices_buf[7*101],travelTimes_buf[6*101],stopTimes_buf[6*101],start_time[8],salesDate_buf[16];
+    char station_buf[l_han(STATIONS_LEN)*STATION_NUM],prices_buf[7*STATION_NUM],travelTimes_buf[6*STATION_NUM],stopTimes_buf[6*STATION_NUM],start_time[8],salesDate_buf[16];
     trainID_t tid;
     int seatNum,stationNum;
     char type;
@@ -208,9 +208,9 @@ void t_sys::add_train(vars v){
             case 'y':cin>>type;break;
         }
     }
-    char* stations[101];
+    char* stations[STATION_NUM];
 
-    int prices[101],travelTime[101],stopoverTimes[101],salesDate=parsingDateAndTime(salesDate_buf);
+    int prices[STATION_NUM],travelTime[STATION_NUM],stopoverTimes[STATION_NUM],salesDate=parsingDateAndTime(salesDate_buf);
     splitStr(station_buf,stations);
     splitInt(prices_buf,prices);
     splitInt(travelTimes_buf,travelTime);
