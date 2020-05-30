@@ -6,6 +6,7 @@
 #include <cstring>
 #include "bptree.h"
 #include "SLRU.h"
+#include "LRU.h"
 #include "../include/file_alternative.h"
 using std::ios;
 namespace bptree {

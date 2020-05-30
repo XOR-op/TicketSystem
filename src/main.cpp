@@ -9,11 +9,13 @@
 #include "UserOrderManager.h"
 #include "main_helper.h"
 #include "commands.h"
+#include "../include/debug.h"
 
 using namespace std;
 using namespace t_sys;
 using namespace bptree;
-
+Debug::CacheMissRater LRUrater,SLRUrater;
+//using Debug::SLRUrater;
 void init(){
     LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
     LRUBPTree<long long, int>::Init(TRAIN_STATION_INDEX_PATH);
@@ -35,7 +37,7 @@ void cleanAll(){
 }
 
 int main() {
-#define NDEBUG
+//#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();
@@ -129,6 +131,22 @@ int main() {
                     break;
             }
         }
+    }
+    {
+        // debug
+#ifdef DEBUG_FLAG
+        double vm,rss;
+        Debug::process_mem_usage(vm,rss);
+        cout<<"VM: "<<vm<<"; RSS: "<<rss<<endl;
+        if(SLRUrater.good()){
+            SLRUrater.hitRate();
+            SLRUrater.hotByHit();
+            SLRUrater.coldByHit();
+        }
+        if(LRUrater.good()){
+            LRUrater.hitRate();
+        }
+#endif
     }
     delete user_mgr;
     delete train_mgr;
