@@ -3,12 +3,12 @@ using namespace t_sys;
 bool UserManager::isOnline(const username_t& user) const {
     return onlinePool.find(user)!=onlinePool.end();
 }
-std::pair<bool,order> UserManager::getorder(OrderManager* ord_manager,const username_t &user, int x) {
+std::pair<bool,order> UserManager::getorder(UserOrderManager* ord_manager, const username_t &user, int x) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
     auto* ptr=user_cache.get(loc);
     return ord_manager->refundOrder(ptr->orderOffset,x);
 }
-std::pair<DiskLoc_T,int> UserManager::addorder(OrderManager* ord_manager,const username_t &user, const order *record) {
+std::pair<DiskLoc_T,int> UserManager::addorder(UserOrderManager* ord_manager, const username_t &user, const order *record) {
     DiskLoc_T loc=usernameToOffset.search(user).first;
     auto* user_ptr=user_cache.get(loc);
     auto where=ord_manager->appendRecord(user_ptr->orderOffset, record);
@@ -99,8 +99,8 @@ bool UserManager::Modify_profile(const username_t& origin,const username_t& targ
     defaultOut << (user_ptr->username.name) << ' ' << (user_ptr->name) << ' ' << (user_ptr->mailAddr) << ' ' << (user_ptr->privilege) << endl;
     return true;
 }
-bool UserManager::Add_user(OrderManager* ord_manager, const username_t* cur_user, const username_t* u,
-              const char* passwd, const char* name, const char* mailaddr, int privilege){
+bool UserManager::Add_user(UserOrderManager* ord_manager, const username_t* cur_user, const username_t* u,
+                           const char* passwd, const char* name, const char* mailaddr, int privilege){
     if(!is_null){
         int cur_pri=getPrivilege(*cur_user);
         if(!isOnline(*cur_user)||cur_pri==-1||cur_pri<=privilege||getPrivilege(*u)!=-1){
@@ -159,7 +159,7 @@ UserManager::~UserManager(){
     user_cache.destruct();
     userFile.close();
 }
-bool UserManager::Query_Order(OrderManager* order_mgr, const username_t& usr) {
+bool UserManager::Query_Order(UserOrderManager* order_mgr, const username_t& usr) {
     if(isOnline(usr)){
         auto pair=usernameToOffset.search(usr);
         auto* ptr=user_cache.get(pair.first);

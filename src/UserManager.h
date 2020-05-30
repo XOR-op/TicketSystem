@@ -8,7 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include "structure.h"
-#include "OrderManager.h"
+#include "UserOrderManager.h"
 #include "../basic_component/cache.h"
 #include "../basic_component/LRUBPtree.h"
 
@@ -43,9 +43,9 @@ namespace t_sys {
     public:
         bool isOnline(const username_t& user) const;
 
-        std::pair<bool,order> getorder(OrderManager* ord_manager, const username_t& user, int x);
+        std::pair<bool,order> getorder(UserOrderManager* ord_manager, const username_t& user, int x);
 
-        std::pair<DiskLoc_T,int> addorder(OrderManager* ord_manager, const username_t& user, const order* record);
+        std::pair<DiskLoc_T,int> addorder(UserOrderManager* ord_manager, const username_t& user, const order* record);
 
         int getPrivilege(const username_t& user);
 
@@ -60,10 +60,10 @@ namespace t_sys {
         bool Modify_profile(const username_t& origin, const username_t& target,
                             const char* n_passed, const char* n_name, const char* n_mail, const int* n_privilege);
 
-        bool Add_user(OrderManager* ord_manager, const username_t* cur_user, const username_t* u,
+        bool Add_user(UserOrderManager* ord_manager, const username_t* cur_user, const username_t* u,
                       const char* passwd, const char* name, const char* mailaddr, int privilege);
 
-        bool Query_Order(OrderManager* order_mgr,const username_t& usr);
+        bool Query_Order(UserOrderManager* order_mgr, const username_t& usr);
 
         UserManager(const std::string& file_path, const std::string& username_index_path);
 

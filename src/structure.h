@@ -95,6 +95,14 @@ namespace t_sys {
         DiskLoc_T block,nxt;
         int offset_in_block,day,key,num,s,t;
     };
+    static int parsingDate(const char* str){
+        // str guaranteed be 5+1 long
+        return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
+    }
+
+    static int parsingTime(const char* str){
+        return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
+    }
 
 }
 namespace std {

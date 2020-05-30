@@ -6,6 +6,7 @@
 #define TICKETSYSTEM_GLOBAL_H
 #include <memory>
 #include <cassert>
+#include <cstring>
 #include <fstream>
 #include <sstream>
 namespace t_sys{
@@ -17,7 +18,7 @@ namespace t_sys{
     str_t USER_INDEX_PATH="/tmp/ticket_system/user_manager.idx";
     str_t TRAIN_TRAIN_ID_INDEX_PATH="/tmp/ticket_system/train_id.idx";
     str_t TRAIN_STATION_INDEX_PATH="/tmp/ticket_system/train_station.idx";
-    str_t TRAIN_PENDING_PATH="/tmp/ticket_system/pending.db";
+    str_t PENDING_PATH="/tmp/ticket_system/pending.db";
     const int USER_NAME_LEN=20,
             PASSWORD_LEN=30,
             NAME_LEN=5,
@@ -27,6 +28,17 @@ namespace t_sys{
             STATIONS_LEN=10;
     constexpr int l_str(int x){return x+1;}
     constexpr int l_han(int x){return 4*x+1;}
+    static void init_subprocess(const std::string& path) {
+        std::fstream f(path, std::ios::out | std::ios::binary);
+        char buf[sizeof(DiskLoc_T)];
+        char* ptr = buf;
+        DiskLoc_T sz = sizeof(DiskLoc_T);
+#define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
+        write_attribute(sz);
+#undef write_attribute
+        f.write(buf, sizeof(buf));
+        f.close();
+    }
 
 }
 #endif //TICKETSYSTEM_GLOBAL_H

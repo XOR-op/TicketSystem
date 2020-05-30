@@ -1,9 +1,9 @@
-#include "OrderManager.h"
+#include "UserOrderManager.h"
 using namespace t_sys;
 /*
  * fill file with record and return the block's offset
  */
-DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T nextOffset) {
+DiskLoc_T UserOrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     // construct buffer
     char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
     char* buf = buffer;
@@ -25,11 +25,11 @@ DiskLoc_T OrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     return where;
 }
 
-_order_block* OrderManager::getRecord(DiskLoc_T where) {
+_order_block* UserOrderManager::getRecord(DiskLoc_T where) {
     return order_block_cache.get(where);
 }
 
-std::pair<DiskLoc_T,int> OrderManager::appendRecord(DiskLoc_T where, const order* record) {
+std::pair<DiskLoc_T,int> UserOrderManager::appendRecord(DiskLoc_T where, const order* record) {
     auto* block_ptr=order_block_cache.get(where);
     if (block_ptr->size == _order_block::COUNT) {
         // extend
@@ -42,7 +42,7 @@ std::pair<DiskLoc_T,int> OrderManager::appendRecord(DiskLoc_T where, const order
     }
 }
 
-DiskLoc_T OrderManager::createRecord() {
+DiskLoc_T UserOrderManager::createRecord() {
     return extend(nullptr, NO_NEXT);
 }
 static const char* express(char* buf,int what){
@@ -65,7 +65,7 @@ static const char* express(char* buf,int what){
     }
     return buf;
 }
-void OrderManager::printAllOrders(std::ostream& ofs,DiskLoc_T head){
+void UserOrderManager::printAllOrders(std::ostream& ofs, DiskLoc_T head){
     char str_buf[15];
     while (head!=NO_NEXT) {
         auto*ptr= getRecord(head);
@@ -79,9 +79,9 @@ void OrderManager::printAllOrders(std::ostream& ofs,DiskLoc_T head){
     }
 }
 
-OrderManager::OrderManager(const std::string& file_path): order_block_cache(107,
-                                                                            [this](DiskLoc_T where,_order_block* blk){readBlock(file,where,blk);},
-                                                                            [this](DiskLoc_T where,const _order_block* blk){writeBlock(file,where,blk);}){
+UserOrderManager::UserOrderManager(const std::string& file_path): order_block_cache(107,
+                                                                                    [this](DiskLoc_T where,_order_block* blk){readBlock(file,where,blk);},
+                                                                                    [this](DiskLoc_T where,const _order_block* blk){writeBlock(file,where,blk);}){
     file.open(file_path,ios::binary|ios::in|ios::out);
     // read metadata
     char buf[sizeof(order_file_size)];
@@ -93,7 +93,7 @@ OrderManager::OrderManager(const std::string& file_path): order_block_cache(107,
 #undef read_attribute
 }
 
-OrderManager::~OrderManager() {
+UserOrderManager::~UserOrderManager() {
     char buf[sizeof(order_file_size)];
     char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
@@ -104,7 +104,7 @@ OrderManager::~OrderManager() {
     order_block_cache.destruct();
     file.close();
 }
-std::pair<bool,order> OrderManager::refundOrder(DiskLoc_T head, int n) {
+std::pair<bool,order> UserOrderManager::refundOrder(DiskLoc_T head, int n) {
     int cnt=0;
     while (head!=NO_NEXT){
         auto* block_ptr=order_block_cache.get(head);
@@ -124,25 +124,25 @@ std::pair<bool,order> OrderManager::refundOrder(DiskLoc_T head, int n) {
     return std::make_pair(false, order());
 }
 
-void OrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
+void UserOrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
     auto* block_ptr=order_block_cache.get(block);
     block_ptr->data[offset_in_block].stat=order::SUCCESS;
     order_block_cache.set_dirty_bit(block);
 }
 
-void OrderManager::Init(const std::string& path) {
+void UserOrderManager::Init(const std::string& path) {
     std::fstream file(path, ios::binary | ios::out);
     DiskLoc_T sz = sizeof(DiskLoc_T);
     file.write((char*) &sz, sizeof(sz));
     file.close();
 }
 
-void OrderManager::readBlock(std::fstream& ifs, DiskLoc_T where, _order_block* ptr) {
+void UserOrderManager::readBlock(std::fstream& ifs, DiskLoc_T where, _order_block* ptr) {
     ifs.seekg(where);
     ifs.read((char*) ptr,sizeof(_order_block));
 }
 
-void OrderManager::writeBlock(std::fstream& ofs, DiskLoc_T where,const _order_block* ptr) {
+void UserOrderManager::writeBlock(std::fstream& ofs, DiskLoc_T where, const _order_block* ptr) {
     ofs.seekp(where);
     ofs.write((const char*)ptr,sizeof(_order_block));
 }

@@ -2,8 +2,8 @@
 // Created by vortox on 29/3/20.
 //
 
-#ifndef TICKETSYSTEM_ORDERMANAGER_H
-#define TICKETSYSTEM_ORDERMANAGER_H
+#ifndef TICKETSYSTEM_USERORDERMANAGER_H
+#define TICKETSYSTEM_USERORDERMANAGER_H
 
 #include <fstream>
 #include <cstring>
@@ -26,7 +26,7 @@ namespace t_sys {
         order data[COUNT];
     };
 
-    class OrderManager {
+    class UserOrderManager {
     private:
         const static int DATA_SIZE = sizeof(order);
         const static DiskLoc_T NO_NEXT = 0;
@@ -71,11 +71,11 @@ namespace t_sys {
 
         void setSuccess(DiskLoc_T block,int offset_in_block);
 
-        explicit OrderManager(const std::string& file_path);
+        explicit UserOrderManager(const std::string& file_path);
 
-        ~OrderManager();
+        ~UserOrderManager();
 
         static void Init(const std::string& path);
     };
 }
-#endif //TICKETSYSTEM_ORDERMANAGER_H
+#endif //TICKETSYSTEM_USERORDERMANAGER_H

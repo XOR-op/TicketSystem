@@ -6,7 +6,7 @@
 #include "structure.h"
 #include "UserManager.h"
 #include "TrainManager.h"
-#include "OrderManager.h"
+#include "UserOrderManager.h"
 #include "main_helper.h"
 #include "commands.h"
 
@@ -18,15 +18,16 @@ void init(){
     LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
     LRUBPTree<long long, int>::Init(TRAIN_STATION_INDEX_PATH);
     LRUBPTree<username_t, DiskLoc_T>::Init(USER_INDEX_PATH);
+    PendingTicketManager::Init(PENDING_PATH);
     UserManager::Init(USER_PATH);
-    TrainManager::Init(TRAIN_PATH,TRAIN_PENDING_PATH);
-    OrderManager::Init(ORDER_PATH);
+    TrainManager::Init(TRAIN_PATH);
+    UserOrderManager::Init(ORDER_PATH);
 }
 
 void cleanAll(){
     remove(TRAIN_STATION_INDEX_PATH);
     remove(TRAIN_TRAIN_ID_INDEX_PATH);
-    remove(TRAIN_PENDING_PATH);
+    remove(PENDING_PATH);
     remove(USER_INDEX_PATH);
     remove(USER_PATH);
     remove(TRAIN_PATH);
@@ -43,9 +44,10 @@ int main() {
 #endif
     if (needInit()) init();
     auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-    auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_PENDING_PATH,TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
-    auto* order_mgr=new OrderManager(ORDER_PATH);
-    vars binding(train_mgr,user_mgr,order_mgr);
+    auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
+    auto* order_mgr=new UserOrderManager(ORDER_PATH);
+    auto* pending_mgr=new PendingTicketManager(PENDING_PATH);
+    vars binding(train_mgr,user_mgr,order_mgr,pending_mgr);
     char buffer[16];
     while (cin>>buffer){
         if(buffer[0]=='q'){
@@ -112,11 +114,13 @@ int main() {
                     delete user_mgr;
                     delete train_mgr;
                     delete order_mgr;
+                    delete pending_mgr;
                     init();
                     user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-                    train_mgr=new TrainManager(TRAIN_PATH, TRAIN_PENDING_PATH,TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
-                    order_mgr=new OrderManager(ORDER_PATH);
-                    binding=vars(train_mgr,user_mgr,order_mgr);
+                    train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
+                    order_mgr=new UserOrderManager(ORDER_PATH);
+                    pending_mgr=new PendingTicketManager(PENDING_PATH);
+                    binding=vars(train_mgr,user_mgr,order_mgr,pending_mgr);
                     cout<<"0"<<endl;
                     break;
                 case 'd':

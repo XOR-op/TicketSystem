@@ -9,16 +9,17 @@
 #include "global.h"
 #include "TrainManager.h"
 #include "UserManager.h"
-#include "OrderManager.h"
+#include "UserOrderManager.h"
 namespace t_sys{
 
     class vars{
     public:
         TrainManager* train_mgr;
         UserManager* user_mgr;
-        OrderManager* order_mgr;
-        vars(TrainManager* tm,UserManager* um,OrderManager* om)
-        :train_mgr(tm),user_mgr(um),order_mgr(om){}
+        UserOrderManager* order_mgr;
+        PendingTicketManager* pending_mgr;
+        vars(TrainManager* tm, UserManager* um, UserOrderManager* om,PendingTicketManager* pm)
+        :train_mgr(tm),user_mgr(um),order_mgr(om),pending_mgr(pm){}
     };
 
     bool needInit();

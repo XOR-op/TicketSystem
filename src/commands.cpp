@@ -26,7 +26,7 @@ void t_sys::query_ticket(vars v){
             case 'p':cin >> p;break;
         }
     }
-    v.train_mgr->Query_ticket(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
+    v.train_mgr->Query_ticket(start,to,parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
 }
 
 void t_sys::query_transfer(vars v){
@@ -40,7 +40,7 @@ void t_sys::query_transfer(vars v){
             case 'p':cin >> p;break;
         }
     }
-    v.train_mgr->Query_transfer(start,to,TrainManager::parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
+    v.train_mgr->Query_transfer(start,to,parsingDate(date),p[0]=='t'?TrainManager::TIME:TrainManager::COST);
 }
 
 
@@ -128,7 +128,7 @@ void t_sys::query_train(vars v){
             cin>>tid.ID;
         else cin>>date;
     }
-    v.train_mgr->Query_train(tid,TrainManager::parsingDate(date));
+    v.train_mgr->Query_train(tid,parsingDate(date));
 }
 
 void t_sys::refund_ticket(vars v){
@@ -139,7 +139,7 @@ void t_sys::refund_ticket(vars v){
             case 'n':cin>>n;break;
         }
     }
-    v.train_mgr->Refund_ticket(v.user_mgr,v.order_mgr,u,n);
+    v.train_mgr->Refund_ticket(v.user_mgr,v.order_mgr,v.pending_mgr,u,n);
 }
 
 void t_sys::buy_ticket(vars v){
@@ -159,7 +159,7 @@ void t_sys::buy_ticket(vars v){
             case 'q':cin>>q;break;
         }
     }
-    v.train_mgr->Buy_ticket(v.user_mgr,v.order_mgr,usr,tid,TrainManager::parsingDate(date),n,from,to,q[0]=='t');
+    v.train_mgr->Buy_ticket(v.user_mgr,v.order_mgr,v.pending_mgr,usr,tid,parsingDate(date),n,from,to,q[0]=='t');
 }
 
 void splitInt(const char* buf,int* arr){
@@ -216,5 +216,5 @@ void t_sys::add_train(vars v){
     splitInt(travelTimes_buf,travelTime);
     if(stationNum>2)
         splitInt(stopTimes_buf,stopoverTimes);
-    v.train_mgr->Add_train(tid,stationNum,seatNum,stations,prices,TrainManager::parsingTime(start_time),travelTime,stopoverTimes,salesDate,type);
+    v.train_mgr->Add_train(tid,stationNum,seatNum,stations,prices,parsingTime(start_time),travelTime,stopoverTimes,salesDate,type);
 }

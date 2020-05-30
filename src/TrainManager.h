@@ -5,8 +5,9 @@
 #include <iostream>
 #include <algorithm>
 #include "structure.h"
-#include "OrderManager.h"
+#include "UserOrderManager.h"
 #include "UserManager.h"
+#include "PendingTicketManager.h"
 #include "../basic_component/cache.h"
 #include "../basic_component/LRUBPtree.h"
 #include "../include/vector.hpp"
@@ -14,16 +15,15 @@ using std::endl;
 namespace t_sys {
     class TrainManager{
     private:
-        std::fstream trainFile,ticketFile;
-        DiskLoc_T train_file_size,ticket_file_size;
+        std::fstream trainFile;
+        DiskLoc_T train_file_size;
         std::ostream& defaultOut;
         cache::LRUCache<DiskLoc_T,train> train_cache;
-        cache::LRUCache<DiskLoc_T ,pending_order> pending_cache;
         bptree::LRUBPTree<trainID_t,DiskLoc_T> trainidToOffset;
-        bptree::LRUBPTree<long long,int> stationTotrain; //long long = stationnum+trainnum, int = k-th station
-        int trainnum;//0-base
-        int stationnum;//1-base
-        int ticketnum;//1-base
+        bptree::LRUBPTree<long long,int> stationTotrain; //long long = station_num+train_num, int = k-th station
+        int train_num;//0-base
+        int station_num;//1-base
+        int ticket_num;//1-base
         pse_std::vector<trainID_t>trainlist;
 
         static unsigned int myhash( const void * key, int len, unsigned int seed );
@@ -41,56 +41,21 @@ namespace t_sys {
         };
         freenode* head;
 
-        static void loadTrain(std::fstream& ifs,DiskLoc_T offset,train* tra){
-            ifs.seekg(offset);
-            ifs.read((char*)tra, sizeof(train));
-        }
-        static void saveTrain(std::fstream& ofs,DiskLoc_T offset,const train* tra){
-            ofs.seekp(offset);
-            ofs.write((char*)tra, sizeof(train));
-        }
-
-        static void loadpendingorder(std::fstream& ifs,DiskLoc_T offset,pending_order* po){
-            ifs.seekg(offset);
-            ifs.read((char*)po, sizeof(pending_order));
-        }
-        static void savependingorder(std::fstream& ofs,DiskLoc_T offset,const pending_order* po){
-            ofs.seekp(offset);
-            ofs.write((char*)po, sizeof(pending_order));
-        }
 
 
         DiskLoc_T increaseFile(train* tra);
         void transfer_sub_print(const std::pair<int, std::pair<int, int>>& A,int date,const char* station);
-
-    public:
-        enum {TIME=0,COST=1};
         int findtrainID(const trainID_t& t);
         void print(int x);
         void printdate(int x);
         void printtime(int x);
-
-
-        static int parsingDate(const char* str){
-            // str guaranteed be 5+1 long
-            return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
-        }
-
-        static int parsingTime(const char* str){
-            return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
-        }
-
         int calcdays(int start,int end);
-
         int calctime(int start,int end);
-
         int calcstartday(int date,int days);
-
-        void add_pendingorder(pending_order* record, train* tra);
-
-        void allocate_tickets(OrderManager* ord_manager,train* ptr,const order* Order);
-
         void addtime(int &date,int &tim,int t);
+
+    public:
+        enum {TIME=0,COST=1};
 
         bool Add_train(const trainID_t& t, int stationNUM, int seatNUM, char** stations,
                        const int* prices, int startTime, const int* travelTimes, const int* stopoverTimes, int saleDate, char type);//saleDate = mmddmmdd
@@ -105,16 +70,16 @@ namespace t_sys {
 
         bool Query_transfer(const char *Sstation,const char *Tstation,int date,int order=TIME);
 
-        bool Buy_ticket(UserManager* usr_manager,OrderManager* ord_manager,username_t usr,trainID_t tra,
-                        int date,int num,char *Sstation,char *Tstation,bool wait=0);
+        bool Buy_ticket(UserManager* usr_manager, UserOrderManager* ord_manager,PendingTicketManager* pend_manager, username_t usr, trainID_t tra,
+                        int date, int num, char *Sstation, char *Tstation, bool wait=0);
 
-        bool Refund_ticket(UserManager* usr_manager,OrderManager* ord_manager,username_t usr,int x=1);
+        bool Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_manager,PendingTicketManager* pend_manager, username_t usr, int x=1);
 
-        TrainManager(const std::string& file_path, const std::string& pending_path, const std::string& trainid_index_path, const std::string& station_index_path);
+        TrainManager(const std::string& file_path,const std::string& trainid_index_path, const std::string& station_index_path);
 
         ~TrainManager();
 
-        static void Init(const std::string& file_path,const std::string& pending_path);
+        static void Init(const std::string& file_path){init_subprocess(file_path);}
     };
 
 }
