@@ -8,7 +8,7 @@
 #include <memory>
 #include <cstring>
 #include <cstdio>
-#include "cache.h"
+#include "LRU.h"
 #include "../src/global.h"
 
 using std::size_t;

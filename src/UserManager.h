@@ -9,7 +9,7 @@
 #include <iostream>
 #include "structure.h"
 #include "UserOrderManager.h"
-#include "../basic_component/cache.h"
+#include "../basic_component/SLRU.h"
 #include "../basic_component/LRUBPtree.h"
 
 using std::endl;
@@ -20,7 +20,7 @@ namespace t_sys {
         DiskLoc_T user_file_size;
         int is_null;
         std::ostream& defaultOut;
-        cache::LRUCache<DiskLoc_T, user> user_cache;
+        cache::SLRUCache<DiskLoc_T, user> user_cache;
         ds::unordered_map<username_t, int> onlinePool; // username -> privilege
         bptree::LRUBPTree<username_t, DiskLoc_T> usernameToOffset;
 

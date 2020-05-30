@@ -8,7 +8,7 @@
 #include "UserOrderManager.h"
 #include "UserManager.h"
 #include "PendingTicketManager.h"
-#include "../basic_component/cache.h"
+#include "../basic_component/SLRU.h"
 #include "../basic_component/LRUBPtree.h"
 #include "../include/vector.hpp"
 using std::endl;
@@ -18,7 +18,7 @@ namespace t_sys {
         std::fstream trainFile;
         DiskLoc_T train_file_size;
         std::ostream& defaultOut;
-        cache::LRUCache<DiskLoc_T,train> train_cache;
+        cache::SLRUCache<DiskLoc_T,train> train_cache;
         bptree::LRUBPTree<trainID_t,DiskLoc_T> trainidToOffset;
         bptree::LRUBPTree<long long,int> stationTotrain; //long long = station_num+train_num, int = k-th station
         int train_num;//0-base

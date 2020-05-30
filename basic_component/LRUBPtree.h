@@ -5,7 +5,7 @@
 #include <fstream>
 #include <cstring>
 #include "bptree.h"
-#include "cache.h"
+#include "SLRU.h"
 #include "../include/file_alternative.h"
 using std::ios;
 namespace bptree {
@@ -27,7 +27,7 @@ namespace bptree {
         typedef const Node<KeyType,ValueType>* ConstNodePtr;
 
 
-        cache::LRUCache<DiskLoc_T ,Node<KeyType,ValueType>> cache;
+        cache::SLRUCache<DiskLoc_T ,Node<KeyType,ValueType>> cache;
 
         static void load(ds::File& ifs, DiskLoc_T offset, NodePtr tobe_filled);
 

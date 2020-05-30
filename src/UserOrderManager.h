@@ -9,7 +9,7 @@
 #include <cstring>
 #include <iostream>
 #include "structure.h"
-#include "../basic_component//cache.h"
+#include "../basic_component//LRU.h"
 #include "../basic_component/PageManager.h"
 
 using std::ios;
