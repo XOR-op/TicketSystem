@@ -250,6 +250,10 @@ void TrainManager::print_ticket(const pair<int, pair<int, int>>& A, int date, co
 }
 
 bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int date, int order) {
+    if(stationlist.find(station_t(Sstation))==stationlist.end()||stationlist.find(station_t(Tstation))==stationlist.end()){
+        defaultOut<<"0"<<endl;
+        return false;
+    }
     ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                                         stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
