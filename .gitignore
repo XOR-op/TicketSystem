@@ -2,4 +2,5 @@
 /experiDir/
 /.idea/
 /test/
-/include/debug.h
+/test_cpp/
+/testData/
