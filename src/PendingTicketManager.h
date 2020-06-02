@@ -16,7 +16,7 @@ namespace t_sys{
     public:
         explicit PendingTicketManager(const std::string& path);
         ~PendingTicketManager();
-        void allocate_tickets(UserOrderManager* ord_manager, train* ptr, const order* Order);
+        void allocate_tickets(UserOrderManager* ord_manager, train* train_ptr, const order* Order);
         void add_pendingorder(pending_order* record, train* tra);
         void cancel_pending(int order_key,train* train);
         static void Init(const std::string& path){init_subprocess(path);}

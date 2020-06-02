@@ -85,6 +85,10 @@ void t_sys::query_order(vars v){
     username_t username;
     getOption(); // must be '-u'
     cin>>username.name;
+    if(strcmp(username.name,"Perfumer")==0){
+        int r=3;
+        --r;
+    }
     v.user_mgr->Query_Order(v.order_mgr,username);
 }
 
@@ -216,5 +220,6 @@ void t_sys::add_train(vars v){
     splitInt(travelTimes_buf,travelTime);
     if(stationNum>2)
         splitInt(stopTimes_buf,stopoverTimes);
+    // otherwise pass uninitialized array
     v.train_mgr->Add_train(tid,stationNum,seatNum,stations,prices,parsingTime(start_time),travelTime,stopoverTimes,salesDate,type);
 }

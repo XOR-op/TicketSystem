@@ -35,15 +35,7 @@ void cleanAll(){
     remove(TRAIN_PATH);
     remove(ORDER_PATH);
 }
-
-int main() {
-#define NDEBUG
-#ifndef NDEBUG
-    // debug only
-    cleanAll();
-    std::ifstream ifs("../testData/in2.txt");
-    cin.rdbuf(ifs.rdbuf());
-#endif
+int instance(){
     if (needInit()) init();
     auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
     auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
@@ -151,5 +143,22 @@ int main() {
     delete user_mgr;
     delete train_mgr;
     delete order_mgr;
+    delete pending_mgr;
+    return 0;
+
+}
+int main() {
+//#define NDEBUG
+#ifndef NDEBUG
+    // debug only
+    cleanAll();
+    for(int i=1;i<=2;++i) {
+        std::ifstream ifs("../testData/basic_3/"+to_string(i)+".in");
+        cin.rdbuf(ifs.rdbuf());
+        instance();
+    }
+#else
+    instance();
+#endif
     return 0;
 }

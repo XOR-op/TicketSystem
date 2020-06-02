@@ -116,7 +116,7 @@ bool TrainManager::Release_train(const trainID_t& t) {
     for (int i = 0; i < train_ptr->stationNum; i++) {
         auto the_station=station_t(train_ptr->stations[i]);
         if (stationlist.find(the_station) == stationlist.end()) {
-//            assert(train_ptr->stations[i]);
+            assert(train_ptr->stations[i]);
             stationlist[the_station] = ++station_num;
         }
         //std::cout<<i<<' '<<stationlist[station_t(train_ptr->stations[1])]<<endl;
@@ -482,8 +482,12 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord
 }
 TrainManager::TrainManager(const std::string& file_path,
                            const std::string& trainid_index_path, const std::string& station_index_path)
-        : train_cache(51, [this](DiskLoc_T off, train* tra) { loadTrain(trainFile, off, tra); },
-                      [this](DiskLoc_T off, const train* tra) { saveTrain(trainFile, off, tra); }),
+        : train_cache(51, [this](DiskLoc_T off, train* tra) {
+            assert(trainFile.good());
+            loadTrain(trainFile, off, tra); },
+                      [this](DiskLoc_T off, const train* tra) {
+            assert(trainFile.good());
+            saveTrain(trainFile, off, tra); }),
           trainidToOffset(trainid_index_path, 107),
           stationTotrain(station_index_path, 157),
           head(NULL), defaultOut(std::cout), train_num(0), station_num(0), ticket_num(0) {
@@ -505,11 +509,20 @@ TrainManager::~TrainManager() {
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(train_file_size);
 #undef write_attribute
+    assert(trainFile.good());
     trainFile.seekp(0);
     trainFile.write(buf, sizeof(buf));
     train_cache.destruct();
     trainFile.close();
 }
+
+
+
+
+
+
+
+
 int TrainManager::calcstartday(int date, int days) {
     if (date%100 > days)return date-days;
     days -= date%100;

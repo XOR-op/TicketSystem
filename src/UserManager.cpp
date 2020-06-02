@@ -154,6 +154,7 @@ UserManager::~UserManager(){
     write_attribute(user_file_size);
     write_attribute(is_null);
 #undef write_attribute
+    assert(userFile.good());
     userFile.seekp(0);
     userFile.write(buf, sizeof(buf));
     user_cache.destruct();

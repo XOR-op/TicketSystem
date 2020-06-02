@@ -5,10 +5,11 @@ using namespace t_sys;
  */
 DiskLoc_T UserOrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     // construct buffer
-    char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
+//    char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
+    char buffer[sizeof(_order_block)];
     char* buf = buffer;
     int size = (record != nullptr);
-//    assert(size>=0&&size<=1);
+    assert(size>=0&&size<=1);
 # define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
     write_attribute(nextOffset);
     write_attribute(size);
@@ -17,9 +18,11 @@ DiskLoc_T UserOrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     }
 #undef write_attribute
     // write buffer
+    assert(file.good());
     file.seekp(order_file_size);
-
+    assert(file.good());
     file.write(buffer, sizeof(buffer));
+    assert(file.good());
     DiskLoc_T where = order_file_size;
     order_file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*_order_block::COUNT;
     return where;
@@ -49,7 +52,7 @@ static const char* express(char* buf,int what){
     if(what==order::NONE_TIME){
         strcpy(buf,"xx-xx xx:xx");
     } else {
-//        assert(what<=99999999);
+        assert(what<=99999999);
         buf[0] = '0'+(what/10000000)%10;
         buf[1] = '0'+(what/1000000)%10;
         buf[2] = '-';
@@ -99,9 +102,11 @@ UserOrderManager::~UserOrderManager() {
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(order_file_size);
 #undef write_attribute
+    assert(file.good());
+    order_block_cache.destruct();
     file.seekp(0);
     file.write(buf,sizeof(buf));
-    order_block_cache.destruct();
+    file.flush();
     file.close();
 }
 std::pair<bool,order> UserOrderManager::refundOrder(DiskLoc_T head, int n) {

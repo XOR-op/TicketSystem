@@ -488,6 +488,9 @@ namespace bptree {
          * low <= key <= high
          */
         decltype(range(KeyType(), KeyType())) ret;
+        if(root==Node<KeyType,ValueType>::NONE){
+            return ret;
+        }
         NodePtr ptr = loadNode(root);
         while (ptr->type == Node<KeyType, ValueType>::INTERNAL) {
             int off = (les(ptr->K[0],low)) ? (int) (upper_bound(ptr->K, ptr->K+ptr->size, low,les)-ptr->K) : 0;

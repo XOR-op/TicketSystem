@@ -28,38 +28,43 @@ PendingTicketManager::~PendingTicketManager() {
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(pending_file_size);
 #undef write_attribute
+    assert(pendingFile.good());
     pendingFile.seekp(0);
     pendingFile.write(buf, sizeof(buf));
     pending_cache.destruct();
     pendingFile.close();
 }
-void PendingTicketManager::allocate_tickets(UserOrderManager* ord_manager, train* ptr, const order* Order) {
-    for (DiskLoc_T la = -1, where = ptr->ticket_head; where != -1;) {
-//        assert(where);
-        auto* p = pending_cache.get(where);
-        bool flag = false;
-        if (p->day == Order->day) {
-            flag = true;
-            for (int j = p->s; j < p->t; j++)
-                if (p->num > ptr->stationTicketRemains[p->day][j]) {
-                    flag = false;
+void PendingTicketManager::allocate_tickets(UserOrderManager* ord_manager, train* train_ptr, const order* Order) {
+    // try to dequeue pending orders
+    for (DiskLoc_T prev_ofst = -1, where = train_ptr->ticket_head; where != -1;) {
+        assert(where); // offset 0 is reserved for file_size
+        auto* pending_o = pending_cache.get(where);
+        bool able_to_buy = false;
+        if (pending_o->day == Order->day) {
+            able_to_buy = true;
+            for (int j = pending_o->s; j < pending_o->t; j++)
+                if (pending_o->num > train_ptr->stationTicketRemains[pending_o->day][j]) {
+                    able_to_buy = false;
                     break;
                 }
         }
-        if (flag) {
-            for (int j = p->s; j < p->t; j++)
-                ptr->stationTicketRemains[p->day][j]-=p->num;
-            ord_manager->setSuccess(p->block, p->offset_in_block);
-            //delete p
-            if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
-            if (where == ptr->ticket_end)ptr->ticket_end = la;
-            auto* la_p = pending_cache.get(la);
-            la_p->nxt = p->nxt;
-            pending_cache.set_dirty_bit(la);
+        if (able_to_buy) {
+            for (int j = pending_o->s; j < pending_o->t; j++)
+                train_ptr->stationTicketRemains[pending_o->day][j]-=pending_o->num;
+            ord_manager->setSuccess(pending_o->block, pending_o->offset_in_block);
+            // remove pending_o from linked list
+            if (where == train_ptr->ticket_head)train_ptr->ticket_head = pending_o->nxt;
+            if (where == train_ptr->ticket_end)train_ptr->ticket_end = prev_ofst;
+            if(prev_ofst != -1) {
+                // fix prev node
+                auto* prev_ptr = pending_cache.get(prev_ofst);
+                prev_ptr->nxt = pending_o->nxt;
+                pending_cache.set_dirty_bit(prev_ofst);
+            }
             pending_cache.remove(where);
-            where = la_p->nxt;
+            where = pending_o->nxt;
         } else {
-            la = where, where = p->nxt;
+            prev_ofst = where, where = pending_o->nxt;
         }
     }
 }
@@ -77,11 +82,11 @@ void PendingTicketManager::add_pendingorder(pending_order* record, train* tra) {
         pendingFile.seekp(pending_file_size);
         pendingFile.write((char*) record, sizeof(pending_order));
     }
-    pending_file_size += sizeof(record);
+    pending_file_size += sizeof(pending_order);
 }
 void PendingTicketManager::cancel_pending(int order_key,train* ptr) {
     for (DiskLoc_T la = -1, where = ptr->ticket_head;;) {
-//        assert(where);
+        assert(where);
         auto* p = pending_cache.get(where);
         if (p->key == order_key) {
             //delete p

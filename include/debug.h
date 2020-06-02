@@ -7,7 +7,7 @@
 //#include <unistd.h>
 #include <fstream>
 #include <iostream>
-#define NDEBUG
+//#define NDEBUG
 namespace Debug{
     /*
     static void process_mem_usage(double& vm_usage, double& resident_set)

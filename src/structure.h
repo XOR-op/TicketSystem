@@ -92,8 +92,13 @@ namespace t_sys {
     };
 
     struct pending_order{
-        DiskLoc_T block,nxt;
-        int offset_in_block,day,key,num,s,t;
+        DiskLoc_T block;
+        DiskLoc_T nxt;
+        int offset_in_block;
+        int day;
+        int key;
+        int num;
+        int s,t;
     };
     static int parsingDate(const char* str){
         // str guaranteed be 5+1 long
