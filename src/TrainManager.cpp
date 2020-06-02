@@ -116,7 +116,7 @@ bool TrainManager::Release_train(const trainID_t& t) {
     for (int i = 0; i < train_ptr->stationNum; i++) {
         auto the_station=station_t(train_ptr->stations[i]);
         if (stationlist.find(the_station) == stationlist.end()) {
-            assert(train_ptr->stations[i]);
+//            assert(train_ptr->stations[i]);
             stationlist[the_station] = ++station_num;
         }
         //std::cout<<i<<' '<<stationlist[station_t(train_ptr->stations[1])]<<endl;

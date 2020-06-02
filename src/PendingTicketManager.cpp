@@ -1,5 +1,4 @@
 #include "PendingTicketManager.h"
-
 using namespace t_sys;
 
 static void loadpendingorder(std::fstream& ifs,DiskLoc_T offset,pending_order* po){
@@ -36,7 +35,7 @@ PendingTicketManager::~PendingTicketManager() {
 }
 void PendingTicketManager::allocate_tickets(UserOrderManager* ord_manager, train* ptr, const order* Order) {
     for (DiskLoc_T la = -1, where = ptr->ticket_head; where != -1;) {
-        assert(where);
+//        assert(where);
         auto* p = pending_cache.get(where);
         bool flag = false;
         if (p->day == Order->day) {
@@ -82,7 +81,7 @@ void PendingTicketManager::add_pendingorder(pending_order* record, train* tra) {
 }
 void PendingTicketManager::cancel_pending(int order_key,train* ptr) {
     for (DiskLoc_T la = -1, where = ptr->ticket_head;;) {
-        assert(where);
+//        assert(where);
         auto* p = pending_cache.get(where);
         if (p->key == order_key) {
             //delete p

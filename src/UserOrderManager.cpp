@@ -8,7 +8,7 @@ DiskLoc_T UserOrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     char buffer[sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE];
     char* buf = buffer;
     int size = (record != nullptr);
-    assert(size>=0&&size<=1);
+//    assert(size>=0&&size<=1);
 # define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
     write_attribute(nextOffset);
     write_attribute(size);
@@ -49,7 +49,7 @@ static const char* express(char* buf,int what){
     if(what==order::NONE_TIME){
         strcpy(buf,"xx-xx xx:xx");
     } else {
-        assert(what<=99999999);
+//        assert(what<=99999999);
         buf[0] = '0'+(what/10000000)%10;
         buf[1] = '0'+(what/1000000)%10;
         buf[2] = '-';
