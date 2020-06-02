@@ -7,8 +7,8 @@
 #include <functional>
 #include <cassert>
 #include "../include/unordered_map.h"
-#include "../include/debug.h"
-extern Debug::CacheMissRater SLRUrater;
+//#include "../include/debug.h"
+//extern Debug::CacheMissRater SLRUrater;
 //using Debug::SLRUrater;
 namespace cache{
     template <typename DiskLoc_T,typename T>
@@ -102,10 +102,10 @@ namespace cache{
 
         DataPtr get(DiskLoc_T offset) {
             if(auto iter=hot_table.find(offset);iter!=hot_table.end()){
-                SLRUrater.hot();
+//                SLRUrater.hot();
                 return &(iter->second->data);
             } else if(iter=cold_table.find(offset);iter!=cold_table.end()){
-                SLRUrater.cold();
+//                SLRUrater.cold();
                 node_ptr cur=iter->second;
                 cur->detach();
                 cold_table.erase(offset);
@@ -121,7 +121,7 @@ namespace cache{
                 return &(cur->data);
             } else{
                 // not in cache
-                SLRUrater.miss();
+//                SLRUrater.miss();
                 node_ptr cur=load(offset);
                 cur->attach(cold_head);
                 cold_table[offset]=cur;

@@ -9,12 +9,12 @@
 #include "UserOrderManager.h"
 #include "main_helper.h"
 #include "commands.h"
-#include "../include/debug.h"
+//#include "../include/debug.h"
 
 using namespace std;
 using namespace t_sys;
 using namespace bptree;
-Debug::CacheMissRater LRUrater,SLRUrater;
+//Debug::CacheMissRater LRUrater,SLRUrater;
 //using Debug::SLRUrater;
 void init(){
     LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
@@ -37,7 +37,7 @@ void cleanAll(){
 }
 
 int main() {
-//#define NDEBUG
+#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();

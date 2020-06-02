@@ -4,17 +4,18 @@
 
 #ifndef TICKETSYSTEM_DEBUG_H
 #define TICKETSYSTEM_DEBUG_H
-#include <unistd.h>
+//#include <unistd.h>
 #include <fstream>
 #include <iostream>
-#define DEBUG_FLAG
+#define NDEBUG
 namespace Debug{
+    /*
     static void process_mem_usage(double& vm_usage, double& resident_set)
     {
-        /*
-         * Source code from
-         * https://stackoverflow.com/questions/669438/how-to-get-memory-usage-at-runtime-using-c
-         */
+         //
+         // Source code from
+         // https://stackoverflow.com/questions/669438/how-to-get-memory-usage-at-runtime-using-c
+         //
         using std::ios_base;
         using std::ifstream;
         using std::string;
@@ -49,6 +50,7 @@ namespace Debug{
         vm_usage     = vsize / 1024.0;
         resident_set = rss * page_size_kb;
     }
+    */
     class CacheMissRater{
         std::ostream& printPortion(int a,int b){
             if(total_count==0){

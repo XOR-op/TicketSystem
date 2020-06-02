@@ -9,9 +9,11 @@
 #include <cstring>
 #include <fstream>
 #include <sstream>
+#include "../include/debug.h"
 namespace t_sys{
     typedef std::size_t DiskLoc_T;
     typedef const char* const str_t ;
+#ifndef NDEBUG
     str_t USER_PATH="/tmp/ticket_system/user_manager.db";
     str_t TRAIN_PATH="/tmp/ticket_system/train_manager.db";
     str_t ORDER_PATH="/tmp/ticket_system/order_manager.db";
@@ -19,6 +21,15 @@ namespace t_sys{
     str_t TRAIN_TRAIN_ID_INDEX_PATH="/tmp/ticket_system/train_id.idx";
     str_t TRAIN_STATION_INDEX_PATH="/tmp/ticket_system/train_station.idx";
     str_t PENDING_PATH="/tmp/ticket_system/pending.db";
+#else
+    str_t USER_PATH="./user_manager.db";
+    str_t TRAIN_PATH="./train_manager.db";
+    str_t ORDER_PATH="./order_manager.db";
+    str_t USER_INDEX_PATH="./user_manager.idx";
+    str_t TRAIN_TRAIN_ID_INDEX_PATH="./train_id.idx";
+    str_t TRAIN_STATION_INDEX_PATH="./train_station.idx";
+    str_t PENDING_PATH="./pending.db";
+#endif
     const int USER_NAME_LEN=20,
             PASSWORD_LEN=30,
             NAME_LEN=5,

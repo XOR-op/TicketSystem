@@ -7,8 +7,8 @@
 
 #include <functional>
 #include "../include/unordered_map.h"
-#include "../include/debug.h"
-extern Debug::CacheMissRater LRUrater;
+//#include "../include/debug.h"
+//extern Debug::CacheMissRater LRUrater;
 //using Debug::LRUrater;
 namespace cache{
 
@@ -70,7 +70,7 @@ namespace cache{
             block.next = freelist_head;
             freelist_head = iter->second;
             if(pool[iter->second].dirty_page_bit) {
-                LRUrater.dirty();
+//                LRUrater.dirty();
                 f_expire(block.where, &block.data);
             }
             table.erase(offset);
@@ -81,7 +81,7 @@ namespace cache{
             auto iter = table.find(offset);
             if (iter != table.end()) {
                 // train_cache hit
-                LRUrater.hit();
+//                LRUrater.hit();
                 if (iter->second == pool[LIST_END].next) {
                     return &pool[pool[LIST_END].next].data;
                 }
@@ -97,7 +97,7 @@ namespace cache{
                 return &block.data;
             }
             // train_cache miss
-            LRUrater.miss();
+//            LRUrater.miss();
             if (freelist_head == LIST_END)
                 if(!remove(pool[pool[LIST_END].prev].where))
                     throw std::logic_error("Cache:remove failed");
