@@ -61,6 +61,7 @@ namespace ds{
                 for(auto* node_ptr=map.buckets[i].head;node_ptr;node_ptr=node_ptr->next){
                     memcpy(ptr,&(node_ptr->val.first),sizeof(K));ptr+=sizeof(K);
                     memcpy(ptr,&(node_ptr->val.second),sizeof(V));ptr+=sizeof(V);
+                    assert(node_ptr->val.second);
                 }
             }
             std::ofstream ofs(path, ios::binary);

@@ -26,7 +26,7 @@ namespace t_sys {
         int ticket_num;//1-base
         ds::vector<trainID_t>trainlist;
 
-        ds::unordered_map<station_t ,int>stationlist;
+        ds::unordered_map<station_t ,int>stationlist; // stationName to stationID
 
         struct freenode{
             freenode* nxt;

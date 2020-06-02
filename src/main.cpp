@@ -158,8 +158,8 @@ int main() {
 #ifndef NDEBUG
     // debug only
     cleanAll();
-    for(int i=1;i<=4;++i) {
-        std::ifstream ifs("../testData/archive/"+to_string(i)+".in");
+    for(int i=1;i<=5;++i) {
+        std::ifstream ifs("../testData/archive/data/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
     }

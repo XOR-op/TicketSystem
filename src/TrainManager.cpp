@@ -172,6 +172,7 @@ bool TrainManager::Release_train(const trainID_t& t) {
             stationlist[the_station] = ++station_num;
         }
         //std::cout<<i<<' '<<stationlist[station_t(train_ptr->stations[1])]<<endl;
+        assert(stationlist[the_station]);
         stationTotrain.insert(stationlist[the_station]*10000+train_num, i);
     }
     train_num++;
@@ -254,6 +255,8 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
         defaultOut<<"0"<<endl;
         return false;
     }
+    assert(stationlist[station_t(Sstation)]);
+    assert(stationlist[station_t(Tstation)]);
     ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                                         stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
@@ -275,6 +278,7 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
                 int start = (train_ptr->saleDate)/10000;
                 int end = (train_ptr->saleDate)%10000;
                 if (startday >= start && startday <= end) {
+                    // on sale
                     int key=(order == 0)?
                         calctime(train_ptr->stopoverTimes[S[i].second], train_ptr->travelTimes[T[j].second]) //time = dddhhmm
                         :train_ptr->prices[T[j].second]-train_ptr->prices[S[i].second];
@@ -303,6 +307,10 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
     return true;
 }
 bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, int date, int order) {
+    if(stationlist.find(station_t(Sstation))==stationlist.end()||stationlist.find(station_t(Tstation))==stationlist.end()){
+        defaultOut<<"0"<<endl;
+        return false;
+    }
     ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                                         stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
