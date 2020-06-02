@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <stdexcept>
 
-namespace pse_std {
+namespace ds {
     template<typename T>
     class vector {
     private:

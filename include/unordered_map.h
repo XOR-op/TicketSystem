@@ -9,6 +9,8 @@
 
 using std::size_t;
 namespace ds {
+    template<typename K, typename V>
+    class SerialMap;
 
     template<typename value_t, typename ptr_t, typename ref_t>
     class __iterator {
@@ -33,6 +35,7 @@ namespace ds {
     template<typename K, typename V, typename Allocator=std::allocator<__node<K, V>>>
     class __linked_list {
     private:
+        friend class ds::SerialMap<K,V>;
         typedef std::pair<K, V> pair_t;
         typedef __node<K, V> node;
         Allocator allocator;
@@ -82,7 +85,7 @@ namespace ds {
     template<typename Key, typename T, class Hash=std::hash<Key>>
     class unordered_map {
     private:
-
+        friend class ds::SerialMap<Key,T>;
         typedef std::pair<Key, T> inner_t;
         typedef __iterator<inner_t, inner_t*, inner_t&> iterator;
         Hash hash;

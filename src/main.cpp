@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "global.h"
 #include "../basic_component/LRUBPtree.h"
+#include "../include/SerializationHelper.h"
 #include "structure.h"
 #include "UserManager.h"
 #include "TrainManager.h"
@@ -17,6 +18,8 @@ using namespace bptree;
 //Debug::CacheMissRater LRUrater,SLRUrater;
 //using Debug::SLRUrater;
 void init(){
+    ds::SerialVector<trainID_t>::Init(TRAIN_INFO_PATH);
+    ds::SerialMap<station_t,int>::Init(STATION_INFO_PATH);
     LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
     LRUBPTree<long long, int>::Init(TRAIN_STATION_INDEX_PATH);
     LRUBPTree<username_t, DiskLoc_T>::Init(USER_INDEX_PATH);
@@ -27,6 +30,8 @@ void init(){
 }
 
 void cleanAll(){
+    remove(TRAIN_INFO_PATH);
+    remove(STATION_INFO_PATH);
     remove(TRAIN_STATION_INDEX_PATH);
     remove(TRAIN_TRAIN_ID_INDEX_PATH);
     remove(PENDING_PATH);
@@ -38,7 +43,8 @@ void cleanAll(){
 int instance(){
     if (needInit()) init();
     auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-    auto* train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
+    auto* train_mgr= new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH, TRAIN_INFO_PATH,
+                                      STATION_INFO_PATH);
     auto* order_mgr=new UserOrderManager(ORDER_PATH);
     auto* pending_mgr=new PendingTicketManager(PENDING_PATH);
     vars binding(train_mgr,user_mgr,order_mgr,pending_mgr);
@@ -111,7 +117,7 @@ int instance(){
                     delete pending_mgr;
                     init();
                     user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-                    train_mgr=new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH);
+                    train_mgr= new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH,TRAIN_INFO_PATH,STATION_INFO_PATH);
                     order_mgr=new UserOrderManager(ORDER_PATH);
                     pending_mgr=new PendingTicketManager(PENDING_PATH);
                     binding=vars(train_mgr,user_mgr,order_mgr,pending_mgr);
@@ -148,12 +154,12 @@ int instance(){
 
 }
 int main() {
-//#define NDEBUG
+#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();
-    for(int i=1;i<=2;++i) {
-        std::ifstream ifs("../testData/basic_3/"+to_string(i)+".in");
+    for(int i=1;i<=4;++i) {
+        std::ifstream ifs("../testData/archive/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
     }

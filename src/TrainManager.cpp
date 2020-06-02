@@ -1,6 +1,53 @@
 #include "TrainManager.h"
-
+#include "../include/SerializationHelper.h"
 using namespace t_sys;
+using std::pair;
+int TrainManager::calcstartday(int date, int days) {
+    if (date%100 > days)return date-days;
+    days -= date%100;
+    if (date/100 == 9)return calcstartday(831, days);
+    if (date/100 == 8)return calcstartday(731, days);
+    if (date/100 == 7)return calcstartday(630, days);
+    if (date/100 == 6)return calcstartday(531, days);
+    return -1;
+}
+int TrainManager::calctime(int start, int end) {
+    int mm = end%100-start%100;
+    start /= 100, end /= 100;
+    if (mm < 0)mm += 60, end--;
+    int hh = end%100-start%100;
+    start /= 100, end /= 100;
+    if (hh < 0)hh += 24, end--;
+    int ddd = end-start;
+    return ddd*10000+hh*100+mm;
+}
+int TrainManager::calcdays(int start, int end) {
+    if (start/100 == end/100)return end-start;
+    else {
+        int ans = 0;
+        if (start/100 == 6)ans = 30-start%100;
+        else ans = 31-start%100;
+        for (int i = start/100+1; i < end/100; i++) {
+            if (i == 7 || i == 8 || i == 10)ans += 31;
+            else ans += 30;
+        }
+        return ans+end%100;
+    }
+}
+int TrainManager::findtrainID(const trainID_t& t) {
+    auto rt = trainidToOffset.search(t);
+    if (rt.second)return 1;
+    else return 0;
+}
+void TrainManager::print(int x) {
+    if (x < 10)defaultOut << '0' << x;else defaultOut << x;
+}
+void TrainManager::printdate(int x) {
+    print(x/100);defaultOut << '-';print(x%100);
+}
+void TrainManager::printtime(int x) {
+    print(x/100);defaultOut << ':';print(x%100);
+}
 int getDate(const int x){
     return x/10000;
 }
@@ -8,6 +55,8 @@ int getDate(const int x){
 int getTime(const int x){
     return x%10000;
 }
+int station_id_f(int x){return x/10000;}
+int train_id_f(int x){return x%10000;}
 static void loadTrain(std::fstream& ifs,DiskLoc_T offset,train* tra){
     ifs.seekg(offset);
     ifs.read((char*)tra, sizeof(train));
@@ -90,10 +139,13 @@ bool TrainManager::Delete_train(const trainID_t& t) {
         return false;
     }
     //add to freenode
+    // todo fix
+    /*
     auto* new_node = new freenode;
     new_node->nxt = head;
     new_node->pos = loc;
     head = new_node;
+     */
     //delete
     train_cache.remove(loc);
     trainidToOffset.remove(t);
@@ -172,80 +224,7 @@ bool TrainManager::Query_train(const trainID_t& t, int date) {//date = mmdd
     }
     return true;
 }
-bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int date, int order) {
-    pse_std::vector<std::pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
-                                                                        stationlist[station_t(Sstation)]*10000LL+9999);
-    pse_std::vector<std::pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
-                                                                        stationlist[station_t(Tstation)]*10000LL+9999);
-    pse_std::vector<std::pair<int, std::pair<int, int>>> Ans;
-    int ansnum = 0;
-    for (int i = 0, j = 0; i < S.size() && j < T.size();) {
-        if (S[i].first%10000 < T[j].first%10000)i++;
-        else if (S[i].first%10000 > T[j].first%10000)j++;
-        else {
-            if (S[i].second < T[j].second) {
-                trainID_t t = trainlist[S[i].first%10000];
-                DiskLoc_T loc = trainidToOffset.search(t).first;
-                auto* train_ptr = train_cache.get(loc);
-                int days = getDate(train_ptr->stopoverTimes[S[i].second]);
-                int startday = calcstartday(date, days);
-                int start = (train_ptr->saleDate)/10000;
-                int end = (train_ptr->saleDate)%10000;
-                if (startday >= start && startday <= end) {
-                    int key;
-                    if (order == 0) {
-                        key = calctime(train_ptr->stopoverTimes[S[i].second], train_ptr->travelTimes[T[j].second]);//time = dddhhmm
-                    } else {
-                        key = train_ptr->prices[T[j].second]-train_ptr->prices[S[i].second];
-                    }
-                    std::pair<int, std::pair<int, int>> Element;
-                    Element.first = (int) (S[i].first%10000);
-                    Element.second.first = S[i].second*100+T[j].second;
-                    Element.second.second = key;
-                    ansnum++;
-                    Ans.push_back(Element);
-                }
-            }
-            i++, j++;
-        }
-    }
-    defaultOut << ansnum << endl;
-    if (ansnum == 0)return false;
-    static const int maxN = 10000;
-    static int s[maxN];
-    for (int i = 0; i < ansnum; i++)s[i] = i;
-    auto cmp = [&Ans](int x, int y) -> bool { return Ans[x].second.second < Ans[y].second.second; };
-    std::sort(s, s+ansnum, cmp);
-    //defaultOut
-    for (int i = 0; i < ansnum; i++) {
-        int p = s[i];
-        trainID_t tra = trainlist[Ans[p].first];
-        DiskLoc_T loc = trainidToOffset.search(tra).first;
-        auto* train_ptr = train_cache.get(loc);
-        int s = Ans[p].second.first/100, t = Ans[p].second.first%100;
-        int days = getDate(train_ptr->stopoverTimes[s]);
-        int startday = calcstartday(date, days);
-        int start = (train_ptr->saleDate)/10000;
-        int end = (train_ptr->saleDate)%10000;
-
-        defaultOut << (train_ptr->trainID.ID) << ' ' << Sstation << ' ';
-        printdate(date);
-        defaultOut << ' ';
-        printtime(getTime(train_ptr->stopoverTimes[s]));
-        defaultOut << " -> " << Tstation << ' ';
-        int tdate = date, tmp = 0;
-        addtime(tdate, tmp, 24*60*(getDate(train_ptr->travelTimes[t])-getDate(train_ptr->stopoverTimes[s])));
-        printdate(tdate);
-        defaultOut << ' ';
-        printtime(getTime(train_ptr->travelTimes[t]));
-        defaultOut << ' ' << (train_ptr->prices[t]-train_ptr->prices[s]) << ' ';
-        int seat = train_ptr->seatNum;
-        for (int j = s; j < t; j++)seat = std::min(seat, train_ptr->stationTicketRemains[calcdays(start, startday)][j]);
-        defaultOut << seat << endl;
-    }
-    return true;
-}
-void TrainManager::transfer_sub_print(const std::pair<int, std::pair<int, int>>& A,int date,const char* station){
+void TrainManager::print_ticket(const pair<int, pair<int, int>>& A, int date, const char* station){
     trainID_t tra = trainlist[A.first];
     DiskLoc_T loc = trainidToOffset.search(tra).first;
     auto* train_ptr = train_cache.get(loc);
@@ -269,18 +248,68 @@ void TrainManager::transfer_sub_print(const std::pair<int, std::pair<int, int>>&
     for (int j = s; j < t; j++)seat = std::min(seat, train_ptr->stationTicketRemains[calcdays(start, startday)][j]);
     defaultOut << seat << endl;
 }
-bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, int date, int order) {
-    pse_std::vector<std::pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
+
+bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int date, int order) {
+    ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                                         stationlist[station_t(Sstation)]*10000LL+9999);
-    pse_std::vector<std::pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
+    ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
                                                                         stationlist[station_t(Tstation)]*10000LL+9999);
-    int minkey = 2147483647;
-    std::pair<int, std::pair<int, int>> A, B;
+    ds::vector<pair<int, pair<int, int>>> Ans;  // {train_id,{k1th_train*100+k2th_train,key}}
+
+
+    int ansnum = 0;
+    for (int i = 0, j = 0; i < S.size() && j < T.size();) {
+        if (train_id_f(S[i].first) < train_id_f(T[j].first))i++;
+        else if (train_id_f(S[i].first) > train_id_f(T[j].first))j++;
+        else {
+            if (S[i].second < T[j].second) {
+            trainID_t t = trainlist[train_id_f(S[i].first)];
+                DiskLoc_T loc = trainidToOffset.search(t).first;
+                auto* train_ptr = train_cache.get(loc);
+                int days = getDate(train_ptr->stopoverTimes[S[i].second]);
+                int startday = calcstartday(date, days);
+                int start = (train_ptr->saleDate)/10000;
+                int end = (train_ptr->saleDate)%10000;
+                if (startday >= start && startday <= end) {
+                    int key=(order == 0)?
+                        calctime(train_ptr->stopoverTimes[S[i].second], train_ptr->travelTimes[T[j].second]) //time = dddhhmm
+                        :train_ptr->prices[T[j].second]-train_ptr->prices[S[i].second];
+                    pair<int, pair<int, int>> Element;
+                    Element.first = (int) train_id_f(S[i].first);
+                    Element.second.first = S[i].second*100+T[j].second;
+                    Element.second.second = key;
+                    ansnum++;
+                    Ans.push_back(Element);
+                }
+            }
+            i++, j++;
+        }
+    }
+    defaultOut << ansnum << endl;
+    if (ansnum == 0)return false;
+    static const int maxN = 10000;
+    static int remap[maxN];
+    for (int i = 0; i < ansnum; i++)remap[i] = i;
+    static auto cmp = [&Ans](int x, int y) -> bool { return Ans[x].second.second < Ans[y].second.second; };
+    std::sort(remap, remap+ansnum, cmp);
+    // print tickets
+    for(int i=0;i<ansnum;++i){
+        print_ticket(Ans[remap[i]], date, Sstation);
+    }
+    return true;
+}
+bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, int date, int order) {
+    ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
+                                                                        stationlist[station_t(Sstation)]*10000LL+9999);
+    ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
+                                                                        stationlist[station_t(Tstation)]*10000LL+9999);
+    int minkey = INT32_MAX;
+    pair<int, pair<int, int>> A, B;
     for (int i = 0; i < S.size(); i++)
         for (int j = 0; j < T.size(); j++)
-            if (S[i].first%10000 != T[j].first%10000) {
+            if (train_id_f(S[i].first) != train_id_f(T[j].first)) {
                 //printf("%d %d %lld %lld\n",i,j,S[i].first,T[j].first);
-                trainID_t t1 = trainlist[S[i].first%10000], t2 = trainlist[T[j].first%10000];
+                trainID_t t1 = trainlist[train_id_f(S[i].first)], t2 = trainlist[train_id_f(T[j].first)];
                 DiskLoc_T loc = trainidToOffset.search(t1).first, loc2 = trainidToOffset.search(t2).first;
                 auto* train_ptr = train_cache.get(loc);
                 auto* train_ptr2 = train_cache.get(loc2);
@@ -318,8 +347,8 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                 }
                                 if (key < minkey) {
                                     minkey = key;
-                                    A = std::make_pair((int) (S[i].first%10000), std::make_pair(station1*100+k, date));
-                                    B = std::make_pair((int) (T[j].first%10000), std::make_pair(h*100+station2, hdate));
+                                    A = std::make_pair((int) train_id_f(S[i].first), std::make_pair(station1*100+k, date));
+                                    B = std::make_pair((int) train_id_f(T[j].first), std::make_pair(h*100+station2, hdate));
                                 }
                             } else {
                                 hdate = start2;
@@ -335,8 +364,8 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                 }
                                 if (key < minkey) {
                                     minkey = key;
-                                    A = std::make_pair((int) (S[i].first%10000), std::make_pair(station1*100+k, date));
-                                    B = std::make_pair((int) (T[j].first%10000), std::make_pair(h*100+station2, hdate));
+                                    A = std::make_pair((int) train_id_f(S[i].first), std::make_pair(station1*100+k, date));
+                                    B = std::make_pair((int) train_id_f(T[j].first), std::make_pair(h*100+station2, hdate));
                                 }
                             }
                             break;
@@ -344,12 +373,12 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                 }
             }
     //defaultOut
-    if (minkey == 2147483647) {
+    if (minkey == INT32_MAX) {
         defaultOut << 0 << endl;
         return false;
     } else {
-        transfer_sub_print(A,date,Sstation);
-        transfer_sub_print(B,date,Tstation);
+        print_ticket(A, date, Sstation);
+        print_ticket(B, date, Tstation);
         return true;
     }
 }
@@ -480,8 +509,9 @@ bool TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord
     train_cache.set_dirty_bit(loc);
     return true;
 }
-TrainManager::TrainManager(const std::string& file_path,
-                           const std::string& trainid_index_path, const std::string& station_index_path)
+TrainManager::TrainManager(const std::string& file_path, const std::string& trainid_index_path,
+                           const std::string& station_index_path, const std::string& train_info_path,
+                           const std::string& station_info_path)
         : train_cache(51, [this](DiskLoc_T off, train* tra) {
             assert(trainFile.good());
             loadTrain(trainFile, off, tra); },
@@ -490,30 +520,43 @@ TrainManager::TrainManager(const std::string& file_path,
             saveTrain(trainFile, off, tra); }),
           trainidToOffset(trainid_index_path, 107),
           stationTotrain(station_index_path, 157),
-          head(NULL), defaultOut(std::cout), train_num(0), station_num(0), ticket_num(0) {
+          head(nullptr), defaultOut(std::cout),train_info_path(train_info_path),station_info_path(station_info_path) {
+    // todo fix head because it doesn't work on file yet.
     trainFile.open(file_path);
     //metadata
-    char buf[sizeof(train_file_size)];
+    char buf[sizeof(train_file_size)+sizeof(int)*3+sizeof(head)];
     char* ptr = buf;
     trainFile.seekg(0);
     trainFile.read(buf, sizeof(buf));
 #define read_attribute(ATTR) memcpy((void*)&ATTR,ptr,sizeof(ATTR));ptr+=sizeof(ATTR)
     read_attribute(train_file_size);
+    read_attribute(train_num);
+    read_attribute(station_num);
+    read_attribute(ticket_num);
+    read_attribute(head);
 #undef read_attribute
+    ds::SerialVector<trainID_t>::deserialize(trainlist,train_info_path);
+    ds::SerialMap<station_t,int>::deserialize(stationlist,station_info_path);
 }
 
 TrainManager::~TrainManager() {
     // write metadata
-    char buf[sizeof(train_file_size)];
+    char buf[sizeof(train_file_size)+sizeof(int)*3+sizeof(head)];
     char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(train_file_size);
+    write_attribute(train_num);
+    write_attribute(station_num);
+    write_attribute(ticket_num);
+    write_attribute(head);
 #undef write_attribute
     assert(trainFile.good());
     trainFile.seekp(0);
     trainFile.write(buf, sizeof(buf));
     train_cache.destruct();
     trainFile.close();
+    ds::SerialVector<trainID_t>::serialize(trainlist,train_info_path);
+    ds::SerialMap<station_t,int>::serialize(stationlist,station_info_path);
 }
 
 
@@ -523,78 +566,21 @@ TrainManager::~TrainManager() {
 
 
 
-int TrainManager::calcstartday(int date, int days) {
-    if (date%100 > days)return date-days;
-    days -= date%100;
-    if (date/100 == 9)return calcstartday(831, days);
-    if (date/100 == 8)return calcstartday(731, days);
-    if (date/100 == 7)return calcstartday(630, days);
-    if (date/100 == 6)return calcstartday(531, days);
-    return -1;
-}
-int TrainManager::calctime(int start, int end) {
-    int mm = end%100-start%100;
-    start /= 100, end /= 100;
-    if (mm < 0)mm += 60, end--;
-    int hh = end/100-start/100;
-    start /= 100, end /= 100;
-    if (hh < 0)hh += 24, end--;
-    int ddd = end-start;
-    return ddd*10000+hh*100+mm;
-}
-int TrainManager::calcdays(int start, int end) {
-    if (start/100 == end/100)return end-start;
-    else {
-        int ans = 0;
-        if (start/100 == 6)ans = 30-start%100;
-        else ans = 31-start%100;
-        for (int i = start/100+1; i < end/100; i++) {
-            if (i == 7 || i == 8 || i == 10)ans += 31;
-            else ans += 30;
-        }
-        return ans+end%100;
-    }
-}
-unsigned int TrainManager::myhash(const void* key, int len, unsigned int seed) {
-    const unsigned int m = 0x5bd1e995;
-    const int r = 24;
-    unsigned int h = seed ^len;
-    const unsigned char* data = (const unsigned char*) key;
-    while (len >= 4) {
-        unsigned int k = *(unsigned int*) data;
-        k *= m;
-        k ^= k >> r;
-        k *= m;
-        h *= m;
-        h ^= k;
-        data += 4;
-        len -= 4;
-    }
-    switch (len) {
-        case 3:
-            h ^= data[2] << 16;
-        case 2:
-            h ^= data[1] << 8;
-        case 1:
-            h ^= data[0];
-            h *= m;
-    };
-    h ^= h >> 13;
-    h *= m;
-    h ^= h >> 15;
-    return h;
-}
-int TrainManager::findtrainID(const trainID_t& t) {
-    auto rt = trainidToOffset.search(t);
-    if (rt.second)return 1;
-    else return 0;
-}
-void TrainManager::print(int x) {
-    if (x < 10)defaultOut << '0' << x;else defaultOut << x;
-}
-void TrainManager::printdate(int x) {
-    print(x/100);defaultOut << '-';print(x%100);
-}
-void TrainManager::printtime(int x) {
-    print(x/100);defaultOut << ':';print(x%100);
+void TrainManager::Init(const std::string& file_path) {
+    std::fstream f(file_path, ios::out | ios::binary);
+    char buf[sizeof(DiskLoc_T)+sizeof(int)*3+sizeof(freenode*)];
+    char* ptr = buf;
+    DiskLoc_T sz = sizeof(buf);
+    int train_num=0,station_num=0,ticket_num=0;
+    freenode* p= nullptr;
+#define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
+    write_attribute(sz);
+    write_attribute(train_num);
+    write_attribute(station_num);
+    write_attribute(ticket_num);
+    write_attribute(p);
+#undef write_attribute
+    f.write(buf, sizeof(buf));
+    f.close();
+
 }

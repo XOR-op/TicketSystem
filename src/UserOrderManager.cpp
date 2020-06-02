@@ -24,7 +24,7 @@ DiskLoc_T UserOrderManager::extend(const order* record, DiskLoc_T nextOffset) {
     file.write(buffer, sizeof(buffer));
     assert(file.good());
     DiskLoc_T where = order_file_size;
-    order_file_size += sizeof(DiskLoc_T)+sizeof(int)+DATA_SIZE*_order_block::COUNT;
+    order_file_size += sizeof(_order_block);
     return where;
 }
 
@@ -79,6 +79,7 @@ void UserOrderManager::printAllOrders(std::ostream& ofs, DiskLoc_T head){
                <<' '<<express(str_buf,ref.arriveTime)<<' '<<ref.price<<' '<<ref.num<<std::endl;
         }
         head=ptr->nextOffset;
+        assert(head<1073741824); // 1GB, should not occur in local test
     }
 }
 

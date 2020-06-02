@@ -147,7 +147,7 @@ namespace bptree {
         /*
          * range: low <= key < high
          */
-        pse_std::vector<std::pair<KeyType, ValueType>> range(KeyType low, KeyType high);
+        ds::vector<std::pair<KeyType, ValueType>> range(KeyType low, KeyType high);
 
         ~BPTree() = default;
     };
@@ -483,7 +483,7 @@ namespace bptree {
     }
 
     template<typename KeyType, typename ValueType, typename WeakCmp>
-    pse_std::vector<std::pair<KeyType, ValueType>> BPTree<KeyType, ValueType, WeakCmp>::range(KeyType low, KeyType high) {
+    ds::vector<std::pair<KeyType, ValueType>> BPTree<KeyType, ValueType, WeakCmp>::range(KeyType low, KeyType high) {
         /*
          * low <= key <= high
          */

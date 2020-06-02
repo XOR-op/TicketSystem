@@ -24,27 +24,20 @@ namespace t_sys {
         int train_num;//0-base
         int station_num;//1-base
         int ticket_num;//1-base
-        pse_std::vector<trainID_t>trainlist;
+        ds::vector<trainID_t>trainlist;
 
-        static unsigned int myhash( const void * key, int len, unsigned int seed );
-        struct stationhash{
-            size_t operator()(const station_t ctx) const
-            {
-                return myhash(ctx.st,strlen(ctx.st),static_cast<size_t>(0xc70f6907UL));
-            }
-        };
-        ds::unordered_map<station_t ,int ,stationhash>stationlist;
+        ds::unordered_map<station_t ,int>stationlist;
 
         struct freenode{
             freenode* nxt;
             DiskLoc_T pos;
         };
         freenode* head;
-
+        std::string train_info_path,station_info_path;
 
 
         DiskLoc_T increaseFile(train* tra);
-        void transfer_sub_print(const std::pair<int, std::pair<int, int>>& A,int date,const char* station);
+        void print_ticket(const std::pair<int, std::pair<int, int>>& A, int date, const char* station);
         int findtrainID(const trainID_t& t);
         void print(int x);
         void printdate(int x);
@@ -75,11 +68,13 @@ namespace t_sys {
 
         bool Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_manager,PendingTicketManager* pend_manager, username_t usr, int x=1);
 
-        TrainManager(const std::string& file_path,const std::string& trainid_index_path, const std::string& station_index_path);
+        TrainManager(const std::string& file_path, const std::string& trainid_index_path,
+                     const std::string& station_index_path, const std::string& train_info_path,
+                     const std::string& station_info_path);
 
         ~TrainManager();
 
-        static void Init(const std::string& file_path){init_subprocess(file_path);}
+        static void Init(const std::string& file_path);
     };
 
 }

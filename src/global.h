@@ -21,6 +21,8 @@ namespace t_sys{
     str_t TRAIN_TRAIN_ID_INDEX_PATH="/tmp/ticket_system/train_id.idx";
     str_t TRAIN_STATION_INDEX_PATH="/tmp/ticket_system/train_station.idx";
     str_t PENDING_PATH="/tmp/ticket_system/pending.db";
+    str_t TRAIN_INFO_PATH="/tmp/ticket_system/ticket.dat";
+    str_t STATION_INFO_PATH="/tmp/ticket_system/station.dat";
 #else
     str_t USER_PATH="./user_manager.db";
     str_t TRAIN_PATH="./train_manager.db";
@@ -29,6 +31,8 @@ namespace t_sys{
     str_t TRAIN_TRAIN_ID_INDEX_PATH="./train_id.idx";
     str_t TRAIN_STATION_INDEX_PATH="./train_station.idx";
     str_t PENDING_PATH="./pending.db";
+    str_t TRAIN_INFO_PATH="./ticket.dat";
+    str_t STATION_INFO_PATH="./station.dat";
 #endif
     const int USER_NAME_LEN=20,
             PASSWORD_LEN=30,
