@@ -3,7 +3,7 @@
 
 using namespace t_sys;
 using std::pair;
-int TrainManager::calcstartday(int date, int days) {
+int calcstartday(int date, int days) {
     if (date%100 > days)return date-days;
     days -= date%100;
     if (date/100 == 9)return calcstartday(831, days);
@@ -12,17 +12,18 @@ int TrainManager::calcstartday(int date, int days) {
     if (date/100 == 6)return calcstartday(531, days);
     return -1;
 }
-int TrainManager::calctime(int start, int end) {
-    int mm = end%100-start%100;
-    start /= 100, end /= 100;
-    if (mm < 0)mm += 60, end--;
-    int hh = end%100-start%100;
-    start /= 100, end /= 100;
-    if (hh < 0)hh += 24, end--;
-    int ddd = end-start;
-    return ddd*10000+hh*100+mm;
+int minute_expression(int x){
+    // format in dddhhmm
+    return x%100+60*(x/100%100)+24*60*(x/10000);
 }
-int TrainManager::calcdays(int start, int end) {
+int calctime(int start, int end) {
+    int minute= minute_expression(end)-minute_expression(start);
+    int rt=minute/(24*60)*10000; // day
+    minute%=(24*60);
+    rt+=minute/60*100+minute%60; // hour and minute
+    return rt;
+}
+int calcdays(int start, int end) {
     if (start/100 == end/100)return end-start;
     else {
         int ans = 0;
@@ -40,18 +41,21 @@ int TrainManager::findtrainID(const trainID_t& t) {
     if (rt.second)return 1;
     else return 0;
 }
-void TrainManager::print(int x) {
+std::ostream& TrainManager::print(int x) {
     if (x < 10)defaultOut << '0' << x; else defaultOut << x;
+    return defaultOut;
 }
-void TrainManager::printdate(int x) {
+std::ostream& TrainManager::printdate(int x) {
     print(x/100);
     defaultOut << '-';
     print(x%100);
+    return defaultOut;
 }
-void TrainManager::printtime(int x) {
+std::ostream& TrainManager::printtime(int x) {
     print(x/100);
     defaultOut << ':';
     print(x%100);
+    return defaultOut;
 }
 int getDate(const int x) {
     return x/10000;
@@ -89,7 +93,7 @@ DiskLoc_T TrainManager::increaseFile(train* tra) {
     }
 }
 
-void TrainManager::addtime(int& date, int& tim, int t) {
+void addtime(int& date, int& tim, int t) {
     int d = t/(24*60);
     t %= (24*60);
     date += d;
@@ -126,7 +130,18 @@ bool TrainManager::Add_train(const trainID_t& t, int stationNUM, int seatNUM, ch
     int tmp = 0;
     for (int day = saleDate/10000; day <= saleDate%10000; addtime(day, tmp, 24*60))
         for (int i = 0; i < stationNUM-1; i++)tra.stationTicketRemains[calcdays(saleDate/10000, day)][i] = seatNUM;
-    // write back
+    // preprocessing
+    int date = 0, tim = tra.startTime;
+    for (int i = 0; i < tra.stationNum; i++) {
+        int tmp = tra.travelTimes[i];
+        tra.travelTimes[i] = (i == 0) ? 0 : date*10000+tim;
+        if (i != 0 && i != (tra.stationNum)-1)
+            addtime(date, tim, tra.stopoverTimes[i]);
+        tra.stopoverTimes[i] = (i == (tra.stationNum)-1) ? 0 : date*10000+tim;
+        addtime(date, tim, tmp);
+        if (i > 0)
+            tra.prices[i] += tra.prices[i-1];
+    }
     DiskLoc_T off = increaseFile(&tra);
     trainidToOffset.insert(t, off);
     defaultOut << "0" << endl;
@@ -176,27 +191,15 @@ bool TrainManager::Release_train(const trainID_t& t) {
             assert(train_ptr->stations[i]);
             stationlist[the_station] = ++station_num;
         }
-        //std::cout<<i<<' '<<stationlist[station_t(train_ptr->stations[1])]<<endl;
         assert(stationlist[the_station]);
         stationTotrain.insert(stationlist[the_station]*10000+train_num, i);
     }
     train_num++;
-    int date = 0, tim = train_ptr->startTime;
-    for (int i = 0; i < train_ptr->stationNum; i++) {
-        int tmp = train_ptr->travelTimes[i];
-        train_ptr->travelTimes[i] = (i == 0) ? 0 : date*10000+tim;
-        if (i != 0 && i != (train_ptr->stationNum)-1)
-            addtime(date, tim, train_ptr->stopoverTimes[i]);
-        train_ptr->stopoverTimes[i] = (i == (train_ptr->stationNum)-1) ? 0 : date*10000+tim;
-        addtime(date, tim, tmp);
-        if (i > 0)
-            train_ptr->prices[i] += train_ptr->prices[i-1];
-    }
-    //maybe more things need to do
     train_cache.set_dirty_bit(loc);
     defaultOut << "0" << endl;
     return true;
 }
+
 bool TrainManager::Query_train(const trainID_t& t, int date) {//date = mmdd
     if (!findtrainID(t)) {
         defaultOut << "-1" << endl;
@@ -210,26 +213,32 @@ bool TrainManager::Query_train(const trainID_t& t, int date) {//date = mmdd
         defaultOut << "-1" << endl;
         return false;
     }
+    // print
     defaultOut << (train_ptr->trainID.ID) << ' ' << (train_ptr->type) << endl;
-    int tmp = 0;
+    int ___ = 0;
     int kday = calcdays(start, date);
     for (int i = 0; i < train_ptr->stationNum; i++) {
         defaultOut << (train_ptr->stations[i]) << ' ';
         if (i == 0)defaultOut << "xx-xx xx:xx";
-        else printdate(date), defaultOut << ' ', printtime(getTime(train_ptr->travelTimes[i]));
+        else printdate(date) << ' ', printtime(getTime(train_ptr->travelTimes[i]));
         defaultOut << " -> ";
         if (i != 0 && i != (train_ptr->stationNum)-1)
-            addtime(date, tmp, 24*60*(getDate(train_ptr->stopoverTimes[i])-getDate(train_ptr->travelTimes[i])));
+            addtime(date, ___, 24*60*(getDate(train_ptr->stopoverTimes[i])-getDate(train_ptr->travelTimes[i])));
         if (i == (train_ptr->stationNum)-1)defaultOut << "xx-xx xx:xx";
-        else printdate(date), defaultOut << ' ', printtime(getTime(train_ptr->stopoverTimes[i]));
-        addtime(date, tmp, 24*60*(getDate(train_ptr->travelTimes[i+1])-getDate(train_ptr->stopoverTimes[i])));
-        if (i == 0)defaultOut << " 0";
-        else defaultOut << ' ' << (train_ptr->prices[i]);
-        if (i == (train_ptr->stationNum)-1)defaultOut << " x" << endl;
-        else defaultOut << ' ' << (train_ptr->stationTicketRemains[kday][i]) << endl;
+        else printdate(date) << ' ', printtime(getTime(train_ptr->stopoverTimes[i]));
+        addtime(date, ___, 24*60*(getDate(train_ptr->travelTimes[i+1])-getDate(train_ptr->stopoverTimes[i])));
+        if (i == 0)
+            defaultOut << " 0";
+        else
+            defaultOut << ' ' << (train_ptr->prices[i]);
+        if (i == (train_ptr->stationNum)-1)
+            defaultOut << " x" << endl;
+        else
+            defaultOut << ' ' << (train_ptr->stationTicketRemains[kday][i]) << endl;
     }
     return true;
 }
+
 void TrainManager::print_ticket(const pair<int, pair<int, int>>& A, int date) {
     trainID_t tra = trainlist[A.first];
     DiskLoc_T loc = trainidToOffset.search(tra).first;
@@ -239,17 +248,14 @@ void TrainManager::print_ticket(const pair<int, pair<int, int>>& A, int date) {
     int startday = calcstartday(date, days);
     int start = (train_ptr->saleDate)/10000;
     int end = (train_ptr->saleDate)%10000;
-    defaultOut << (train_ptr->trainID.ID) << ' ' << train_ptr->stations[s]<< ' ';
-    printdate(date);
-    defaultOut << ' ';
-    printtime(getTime(train_ptr->stopoverTimes[s]));
-    defaultOut << " -> " << train_ptr->stations[t] << ' ';
+
+    defaultOut << (train_ptr->trainID.ID) << ' ' << train_ptr->stations[s] << ' ';
+    printdate(date) << ' ';
+    printtime(getTime(train_ptr->stopoverTimes[s])) << " -> " << train_ptr->stations[t] << ' ';
     int tdate = date, tmp = 0;
     addtime(tdate, tmp, 24*60*(int) (getDate(train_ptr->travelTimes[t])-getDate(train_ptr->stopoverTimes[s])));
-    printdate(tdate);
-    defaultOut << ' ';
-    printtime(getTime(train_ptr->travelTimes[t]));
-    defaultOut << ' ' << (train_ptr->prices[t]-train_ptr->prices[s]) << ' ';
+    printdate(tdate) << ' ';
+    printtime(getTime(train_ptr->travelTimes[t])) << ' ' << (train_ptr->prices[t]-train_ptr->prices[s]) << ' ';
     int seat = train_ptr->seatNum;
     for (int j = s; j < t; j++)seat = std::min(seat, train_ptr->stationTicketRemains[calcdays(start, startday)][j]);
     defaultOut << seat << endl;
@@ -263,12 +269,15 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
     }
     assert(stationlist[station_t(Sstation)]);
     assert(stationlist[station_t(Tstation)]);
+    if(strcmp(Sstation,"山东省荣成市")==0&&strcmp(Tstation,"北京市")==0){
+        //todo remove
+        int r=3;--r;
+    }
     ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                               stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
                                                               stationlist[station_t(Tstation)]*10000LL+9999);
-    ds::vector<pair<int, pair<int, int>>> Ans;  // {train_id,{k1th_train*100+k2th_train,key}}
-
+    ds::vector<pair<int, pair<int, int>>> Ans;  // {train_id,{k1th_station*100+k2th_station,key}}
 
     int ansnum = 0;
     for (int i = 0, j = 0; i < S.size() && j < T.size();) {
@@ -285,7 +294,7 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
                 int end = (train_ptr->saleDate)%10000;
                 if (startday >= start && startday <= end) {
                     // on sale
-                    int key = (order == 0) ?
+                    int key = (order == TIME) ?
                               calctime(train_ptr->stopoverTimes[S[i].second],
                                        train_ptr->travelTimes[T[j].second]) //time = dddhhmm
                                            : train_ptr->prices[T[j].second]-train_ptr->prices[S[i].second];
@@ -369,7 +378,7 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                         24*60*getDate(train_ptr_2nd->stopoverTimes[second_train_mid_station]));
                             }
                             int key;
-                            if (order == 0) {
+                            if (order == TIME) {
                                 key = calctime(train_ptr_1st->stopoverTimes[first_kth_station],
                                                train_ptr_1st->travelTimes[first_train_mid_station])+
                                       calctime(getTime(train_ptr_1st->travelTimes[first_train_mid_station]),
@@ -407,6 +416,7 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
         return true;
     }
 }
+
 bool
 TrainManager::Buy_ticket(UserManager* usr_manager, UserOrderManager* ord_manager, PendingTicketManager* pend_manager,
                          username_t usr, trainID_t tra,

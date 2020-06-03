@@ -39,13 +39,9 @@ namespace t_sys {
         DiskLoc_T increaseFile(train* tra);
         void print_ticket(const std::pair<int, std::pair<int, int>>& A,int date);
         int findtrainID(const trainID_t& t);
-        void print(int x);
-        void printdate(int x);
-        void printtime(int x);
-        int calcdays(int start,int end);
-        int calctime(int start,int end);
-        int calcstartday(int date,int days);
-        void addtime(int &date,int &tim,int t);
+        std::ostream& print(int x);
+        std::ostream& printdate(int x);
+        std::ostream& printtime(int x);
 
     public:
         enum {TIME=0,COST=1};
