@@ -357,6 +357,8 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                             if (getTime(train_ptr_1st->travelTimes[first_train_mid_station]) >
                                 getTime(train_ptr_2nd->stopoverTimes[second_train_mid_station]))
                                 stopoverday = 1;
+                            // todo magic fix needs further tweaking: stopoverday==1 means not ok
+                            if(stopoverday)break;
                             // check t_train date
                             int second_leave_day = startday, ___ = 0;
                             addtime(second_leave_day, ___,
@@ -406,8 +408,8 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
         defaultOut << 0 << endl;
         return false;
     } else {
-        print_ticket(A, date);
-        print_ticket(B, date);
+        print_ticket(A, A.second.second);
+        print_ticket(B, B.second.second);
         return true;
     }
 }

@@ -37,7 +37,7 @@ namespace t_sys {
 
 
         DiskLoc_T increaseFile(train* tra);
-        void print_ticket(const std::pair<int, std::pair<int, int>>& A, int date);
+        void print_ticket(const std::pair<int, std::pair<int, int>>& A,int date);
         int findtrainID(const trainID_t& t);
         void print(int x);
         void printdate(int x);
