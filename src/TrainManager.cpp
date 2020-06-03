@@ -319,10 +319,6 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
         defaultOut << "0" << endl;
         return false;
     }
-    if (strcmp(Sstation, "广东省惠阳市") == 0 && strcmp(Tstation, "江苏省高邮市") == 0) {
-        int r = 3;
-        --r;
-    }
     ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                               stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
@@ -357,8 +353,6 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                             if (getTime(train_ptr_1st->travelTimes[first_train_mid_station]) >
                                 getTime(train_ptr_2nd->stopoverTimes[second_train_mid_station]))
                                 stopoverday = 1;
-                            // todo magic fix needs further tweaking: stopoverday==1 means not ok
-                            if(stopoverday)break;
                             // check t_train date
                             int second_leave_day = startday, ___ = 0;
                             addtime(second_leave_day, ___,

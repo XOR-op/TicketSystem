@@ -154,7 +154,7 @@ int instance(){
 
 }
 int main() {
-#define NDEBUG
+//#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();
