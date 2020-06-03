@@ -41,7 +41,7 @@ std::pair<DiskLoc_T,int> UserOrderManager::appendRecord(DiskLoc_T where, const o
         block_ptr->data[block_ptr->size]=*record;
         block_ptr->size+=1;
         order_block_cache.set_dirty_bit(where);
-        return {where, block_ptr->size};
+        return {where, block_ptr->size-1};
     }
 }
 
@@ -118,10 +118,11 @@ std::pair<bool,order> UserOrderManager::refundOrder(DiskLoc_T head, int n) {
             // have found
             auto& ref=block_ptr->data[block_ptr->size-n+cnt];
             if(ref.stat!=order::REFUNDED){
-                order tmp=ref;
+                // origin order
+                order origin_order=ref;
                 ref.stat=order::REFUNDED;
                 order_block_cache.set_dirty_bit(head);
-                return std::make_pair(true,tmp);
+                return std::make_pair(true, origin_order);
             } else return std::make_pair(false, order());
         }
         cnt+=block_ptr->size;
@@ -132,6 +133,7 @@ std::pair<bool,order> UserOrderManager::refundOrder(DiskLoc_T head, int n) {
 
 void UserOrderManager::setSuccess(DiskLoc_T block, int offset_in_block) {
     auto* block_ptr=order_block_cache.get(block);
+    assert(block_ptr->data[offset_in_block].stat==order::PENDING);
     block_ptr->data[offset_in_block].stat=order::SUCCESS;
     order_block_cache.set_dirty_bit(block);
 }

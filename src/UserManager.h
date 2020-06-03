@@ -43,7 +43,7 @@ namespace t_sys {
     public:
         bool isOnline(const username_t& user) const;
 
-        std::pair<bool,order> getorder(UserOrderManager* ord_manager, const username_t& user, int x);
+        std::pair<bool,order> refund_and_return_order(UserOrderManager* ord_manager, const username_t& user, int x);
 
         std::pair<DiskLoc_T,int> addorder(UserOrderManager* ord_manager, const username_t& user, const order* record);
 

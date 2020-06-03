@@ -269,10 +269,6 @@ bool TrainManager::Query_ticket(const char* Sstation, const char* Tstation, int 
     }
     assert(stationlist[station_t(Sstation)]);
     assert(stationlist[station_t(Tstation)]);
-    if(strcmp(Sstation,"山东省荣成市")==0&&strcmp(Tstation,"北京市")==0){
-        //todo remove
-        int r=3;--r;
-    }
     ds::vector<pair<long long, int>> S = stationTotrain.range(stationlist[station_t(Sstation)]*10000LL,
                                                               stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
@@ -520,32 +516,32 @@ TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_mana
         defaultOut << "-1" << endl;
         return false;
     }
-    auto getorder_result = usr_manager->getorder(ord_manager, usr, x);
+    auto getorder_result = usr_manager->refund_and_return_order(ord_manager, usr, x);
     if (!getorder_result.first) {
         defaultOut << "-1" << endl;
         return false;
     }
     defaultOut << "0" << endl;
     order& Order = (getorder_result.second);
-    DiskLoc_T loc = trainidToOffset.search(trainID_t(Order.trainID)).first;
-    auto* ptr = train_cache.get(loc);
+    DiskLoc_T train_offset = trainidToOffset.search(trainID_t(Order.trainID)).first;
+    auto* train_ptr = train_cache.get(train_offset);
     int s = -1, t = -1;
-    for (int i = 0; i < ptr->stationNum; i++) {
-        if (strcmp(ptr->stations[i], Order.from) == 0) {
+    for (int i = 0; i < train_ptr->stationNum; i++) {
+        if (strcmp(train_ptr->stations[i], Order.from) == 0) {
             s = i;
         }
-        if (strcmp(ptr->stations[i], Order.to) == 0) {
+        if (strcmp(train_ptr->stations[i], Order.to) == 0) {
             t = i;
             break;
         }
     }
     if (Order.stat == order::SUCCESS) {
-        for (int j = s; j < t; j++)ptr->stationTicketRemains[Order.day][j] += Order.num;
-        pend_manager->allocate_tickets(ord_manager, ptr, &Order);
+        for (int j = s; j < t; j++)train_ptr->stationTicketRemains[Order.day][j] += Order.num;
+        pend_manager->allocate_tickets(ord_manager, train_ptr, &Order);
     } else {
-        pend_manager->cancel_pending(Order.key, ptr);
+        pend_manager->cancel_pending(Order.key, train_ptr);
     }
-    train_cache.set_dirty_bit(loc);
+    train_cache.set_dirty_bit(train_offset);
     return true;
 }
 TrainManager::TrainManager(const std::string& file_path, const std::string& trainid_index_path,
