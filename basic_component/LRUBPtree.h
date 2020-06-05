@@ -23,7 +23,8 @@ namespace bptree {
     template<typename KeyType, typename ValueType, typename WeakCmp=std::less<KeyType>>
     class LRUBPTree : public BPTree<KeyType, ValueType,WeakCmp> {
     private:
-        static const size_t NO_FREE = SIZE_MAX;
+//        static const size_t NO_FREE = SIZE_MAX;
+        static const DiskLoc_T NO_FREE = DISKLOC_MAX;
         typedef Node<KeyType,ValueType>* NodePtr;
         typedef const Node<KeyType,ValueType>* ConstNodePtr;
 
@@ -68,7 +69,7 @@ namespace bptree {
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    void LRUBPTree<KeyType,ValueType,WeakCmp>::load(ds::File& ifs, bptree::DiskLoc_T offset, NodePtr tobe_filled) {
+    void LRUBPTree<KeyType,ValueType,WeakCmp>::load(ds::File& ifs,DiskLoc_T offset, NodePtr tobe_filled) {
         char buffer[Node<KeyType,ValueType>::BLOCK_SIZE];
         ifs.seekg(offset);
         if (ifs.fail())throw std::runtime_error("CacheBPTree: Can't read");
@@ -107,7 +108,7 @@ namespace bptree {
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    Node<KeyType,ValueType>* LRUBPTree<KeyType,ValueType,WeakCmp>::loadNode(bptree::DiskLoc_T offset) {
+    Node<KeyType,ValueType>* LRUBPTree<KeyType,ValueType,WeakCmp>::loadNode(DiskLoc_T offset) {
         return cache.get(offset);
     }
 

@@ -6,15 +6,16 @@
 #include <cstring>
 #include <algorithm>
 #include "../include/vector.hpp"
+#include "../src/global.h"
 
 using std::tie;
 using std::lower_bound;
 using std::upper_bound;
 using std::move;
 using std::move_backward;
-
+using t_sys::DiskLoc_T;
+using t_sys::DISKLOC_MAX;
 namespace bptree {
-    typedef uint64_t DiskLoc_T;
     const size_t DEGREE = 101;
     const size_t INTERNAL_MIN_ENTRY = (DEGREE-1)/2;
     const size_t LEAF_MIN_ENTRY = (DEGREE/2);
@@ -33,7 +34,7 @@ namespace bptree {
          *  for internal node, max=DEGREE-1, min=floor((DEGREE-1)/2)
          *  for leaf node, max=DEGREE, min=floor(DEGREE/2)
          */
-        const static DiskLoc_T NONE = SIZE_MAX;
+        const static DiskLoc_T NONE = DISKLOC_MAX;
         typedef enum {
             FREE, LEAF, INTERNAL
         } type_t;
@@ -220,7 +221,7 @@ namespace bptree {
 
     template<typename KeyType, typename ValueType, typename WeakCmp>
     std::tuple<KeyType, DiskLoc_T>
-    BPTree<KeyType, ValueType, WeakCmp>::insert_key(NodePtr& cur, const KeyType& key, bptree::DiskLoc_T offset) {
+    BPTree<KeyType, ValueType, WeakCmp>::insert_key(NodePtr& cur, const KeyType& key, DiskLoc_T offset) {
         // @return new allocated node
         insert_key_inplace(cur, key, offset);
         NodePtr new_node = initNode(Node<KeyType, ValueType>::INTERNAL);

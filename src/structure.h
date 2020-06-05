@@ -11,7 +11,6 @@
 #include "../include/unordered_map.h"
 
 namespace t_sys {
-    typedef uint64_t DiskLoc_T;
 
     struct username_t {
         char name[l_str(USER_NAME_LEN)];

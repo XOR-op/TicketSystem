@@ -10,15 +10,17 @@
 #include <cstring>
 #include <fstream>
 using std::ios;
+using t_sys::DiskLoc_T;
+using t_sys::DISKLOC_MAX;
 namespace ds{
     template<typename T>
     class SerialVector {
     public:
         static void serialize(const ds::vector<T>& vec, const std::string& path) {
-            auto size = vec.size()*sizeof(T)+sizeof(std::size_t);
+            t_sys::DiskLoc_T size = vec.size()*sizeof(T)+sizeof(DiskLoc_T);
             char* buf = (char*) malloc(size);
-            memcpy(buf, &size, sizeof(std::size_t));
-            char* ptr = buf+sizeof(std::size_t);
+            memcpy(buf, &size, sizeof(DiskLoc_T));
+            char* ptr = buf+sizeof(DiskLoc_T);
             for (int i=0;i<vec.size();++i,ptr+=sizeof(T))
                 memcpy(ptr, (void*) &vec[i], sizeof(T));
             std::ofstream ofs(path, ios::binary);
@@ -29,10 +31,10 @@ namespace ds{
         }
         static void deserialize(ds::vector<T>& vec, const std::string& path) {
             std::ifstream ifs(path, ios::binary);
-            std::size_t size;
+            DiskLoc_T size;
             ifs.seekg(0);
             ifs.read((char*) &size, sizeof(size));
-            size -= sizeof(size_t);
+            size -= sizeof(DiskLoc_T);
             if (size == 0) {
                 ifs.close();
                 return;
@@ -53,10 +55,10 @@ namespace ds{
     class SerialMap{
     public:
         static void serialize(const ds::unordered_map<K,V>& map,const std::string& path){
-            auto size = map.size()*(sizeof(K)+sizeof(V))+sizeof(std::size_t);
+            DiskLoc_T size = map.size()*(sizeof(K)+sizeof(V))+sizeof(DiskLoc_T);
             char* buf = (char*) malloc(size);
-            memcpy(buf, &size, sizeof(std::size_t));
-            char* ptr = buf+sizeof(std::size_t);
+            memcpy(buf, &size, sizeof(DiskLoc_T));
+            char* ptr = buf+sizeof(DiskLoc_T);
             for(int i=0;i<map.__bucket_count;++i){
                 for(auto* node_ptr=map.buckets[i].head;node_ptr;node_ptr=node_ptr->next){
                     memcpy(ptr,&(node_ptr->val.first),sizeof(K));ptr+=sizeof(K);
@@ -73,10 +75,10 @@ namespace ds{
         }
         static void deserialize(ds::unordered_map<K,V>& map, const std::string& path) {
             std::ifstream ifs(path, ios::binary);
-            std::size_t size;
+            DiskLoc_T size;
             ifs.seekg(0);
             ifs.read((char*) &size, sizeof(size));
-            size -= sizeof(size_t);
+            size -= sizeof(DiskLoc_T);
             if (size == 0) {
                 ifs.close();
                 return;

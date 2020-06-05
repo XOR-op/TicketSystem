@@ -11,7 +11,8 @@
 #include <sstream>
 #include "../include/debug.h"
 namespace t_sys{
-    typedef std::size_t DiskLoc_T;
+    typedef uint32_t DiskLoc_T;
+    const static DiskLoc_T DISKLOC_MAX=UINT32_MAX;
     typedef const char* const str_t ;
 #ifndef NDEBUG
     str_t USER_PATH="/tmp/ticket_system/user_manager.db";
