@@ -34,6 +34,7 @@ namespace t_sys{
     str_t PENDING_PATH="./pending.db";
     str_t TRAIN_INFO_PATH="./ticket.dat";
     str_t STATION_INFO_PATH="./station.dat";
+    str_t OFFSET_INFO_PATH="./offset.dat";
 #endif
     const int USER_NAME_LEN=20,
             PASSWORD_LEN=30,

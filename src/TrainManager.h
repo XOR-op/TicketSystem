@@ -28,17 +28,22 @@ namespace t_sys {
 
         ds::unordered_map<station_t ,int>stationlist; // stationName to stationID
 
+        ds::unordered_map<DiskLoc_T , int>trainOffset;
+
         struct freenode{
             freenode* nxt;
             DiskLoc_T pos;
         };
         freenode* head;
-        std::string train_info_path,station_info_path;
+        std::string train_info_path,station_info_path,offset_info_path;
 
-
+        void loadTrain(std::fstream& ifs, DiskLoc_T offset, train* tra);
+        void saveTrain(std::fstream& ofs, DiskLoc_T offset, const train* tra);
+        int getsize(train* t);
         DiskLoc_T increaseFile(train* tra);
         void print_ticket(const std::pair<int, std::pair<int, int>>& A,int date);
         int findtrainID(const trainID_t& t);
+
         std::ostream& print(int x);
         std::ostream& printdate(int x);
         std::ostream& printtime(int x);
@@ -66,7 +71,7 @@ namespace t_sys {
 
         TrainManager(const std::string& file_path, const std::string& trainid_index_path,
                      const std::string& station_index_path, const std::string& train_info_path,
-                     const std::string& station_info_path);
+                     const std::string& station_info_path,const std::string& offset_info_path);
 
         ~TrainManager();
 

@@ -66,31 +66,117 @@ int getTime(const int x) {
 }
 int station_id_f(int x) { return x/10000; }
 int train_id_f(int x) { return x%10000; }
-static void loadTrain(std::fstream& ifs, DiskLoc_T offset, train* tra) {
+void TrainManager::loadTrain(std::fstream& ifs, DiskLoc_T offset, train* tra) {
     ifs.seekg(offset);
-    ifs.read((char*) tra, sizeof(train));
-}
-static void saveTrain(std::fstream& ofs, DiskLoc_T offset, const train* tra) {
-    ofs.seekp(offset);
-    ofs.write((char*) tra, sizeof(train));
-}
+    char buffer[trainOffset[offset]];
+    ifs.read(buffer, sizeof(buffer));
+    char* buf = buffer;
 
-DiskLoc_T TrainManager::increaseFile(train* tra) {
-    if (head == NULL) {
-        DiskLoc_T rt = train_file_size;
-        tra->offset = rt;
-        trainFile.seekp(train_file_size);
-        trainFile.write((char*) tra, sizeof(train));
-        train_file_size += sizeof(train);
-        return rt;
-    } else {
-        DiskLoc_T rt = head->pos;
-        tra->offset = rt;
-        trainFile.seekp(head->pos);
-        trainFile.write((char*) tra, sizeof(train));
-        head = head->nxt;
-        return rt;
+#define read_attribute(ATTR) memcpy((void*)&ATTR,buf,sizeof(ATTR));buf+=sizeof(ATTR)
+    read_attribute(tra->stationNum);
+    read_attribute(tra->trainID);
+    read_attribute(tra->offset);
+    read_attribute(tra->seatNum);
+    read_attribute(tra->startTime);
+    read_attribute(tra->saleDate);
+    read_attribute(tra->releaseState);
+    read_attribute(tra->type);
+    read_attribute(tra->ticket_head);
+    read_attribute(tra->ticket_end);
+    tra->stations=new char*[tra->stationNum];
+    for(int i=0;i<tra->stationNum;i++){
+        tra->stations[i]=new char[l_han(STATIONS_LEN)];
+        for(int j=0;j<l_han(STATIONS_LEN);j++){read_attribute(tra->stations[i][j]);}
     }
+    tra->prices=new int[tra->stationNum];
+    for(int i=0;i<tra->stationNum;i++){read_attribute(tra->prices[i]);}
+    tra->travelTimes=new int[tra->stationNum];
+    for(int i=0;i<tra->stationNum;i++){read_attribute(tra->travelTimes[i]);}
+    tra->stopoverTimes=new int[tra->stationNum];
+    for(int i=0;i<tra->stationNum;i++){read_attribute(tra->stopoverTimes[i]);}
+    for(int i=0;i<100;i++){
+        tra->stationTicketRemains[i]=new int[tra->stationNum];
+        for(int j=0;j<tra->stationNum;j++){read_attribute(tra->stationTicketRemains[i][j]);}
+    }
+
+#undef read_attribute
+}
+void TrainManager::saveTrain(std::fstream& ofs, DiskLoc_T offset, const train* tra) {
+    ofs.seekp(offset);
+    char buffer[trainOffset[offset]];
+    char* buf = buffer;
+# define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
+    write_attribute(tra->stationNum);
+    write_attribute(tra->trainID);
+    write_attribute(tra->offset);
+    write_attribute(tra->seatNum);
+    write_attribute(tra->startTime);
+    write_attribute(tra->saleDate);
+    write_attribute(tra->releaseState);
+    write_attribute(tra->type);
+    write_attribute(tra->ticket_head);
+    write_attribute(tra->ticket_end);
+    for(int i=0;i<tra->stationNum;i++)
+        for(int j=0;j<l_han(STATIONS_LEN);j++){write_attribute(tra->stations[i][j]);}
+    for(int i=0;i<tra->stationNum;i++){write_attribute(tra->prices[i]);}
+    for(int i=0;i<tra->stationNum;i++){write_attribute(tra->travelTimes[i]);}
+    for(int i=0;i<tra->stationNum;i++){write_attribute(tra->stopoverTimes[i]);}
+    for(int i=0;i<100;i++)
+        for(int j=0;j<tra->stationNum;j++){write_attribute(tra->stationTicketRemains[i][j]);}
+#undef write_attribute
+    ofs.write(buffer, sizeof(buffer));
+}
+int TrainManager::getsize(train *t) {
+    int siz=0;
+    siz+=sizeof(t->stationNum);
+    siz+=sizeof(t->trainID);
+    siz+=sizeof(t->offset);
+    siz+=sizeof(t->seatNum);
+    siz+=sizeof(t->startTime);
+    siz+=sizeof(t->saleDate);
+    siz+=sizeof(t->releaseState);
+    siz+=sizeof(t->type);
+    siz+=sizeof(char)*t->stationNum*l_han(STATIONS_LEN);
+    siz+=sizeof(int)*t->stationNum;
+    siz+=sizeof(int)*t->stationNum;
+    siz+=sizeof(int)*t->stationNum;
+    siz+=sizeof(t->ticket_end)+sizeof(t->ticket_head);
+    siz+=sizeof(int)*t->stationNum*100;
+    return siz;
+}
+DiskLoc_T TrainManager::increaseFile(train* tra) {
+    DiskLoc_T rt = train_file_size;
+    tra->offset = rt;
+    trainFile.seekp(train_file_size);
+    int siz=getsize(tra);
+
+    char buffer[siz];
+    char* buf = buffer;
+# define write_attribute(ATTR) do{memcpy(buf,(void*)&ATTR,sizeof(ATTR));buf+=sizeof(ATTR);}while(0)
+    write_attribute(tra->stationNum);
+    write_attribute(tra->trainID);
+    write_attribute(tra->offset);
+    write_attribute(tra->seatNum);
+    write_attribute(tra->startTime);
+    write_attribute(tra->saleDate);
+    write_attribute(tra->releaseState);
+    write_attribute(tra->type);
+    write_attribute(tra->ticket_head);
+    write_attribute(tra->ticket_end);
+    for(int i=0;i<tra->stationNum;i++)
+        for(int j=0;j<l_han(STATIONS_LEN);j++){write_attribute(tra->stations[i][j]);}
+    for(int i=0;i<tra->stationNum;i++){write_attribute(tra->prices[i]);}
+    for(int i=0;i<tra->stationNum;i++){write_attribute(tra->travelTimes[i]);}
+    for(int i=0;i<tra->stationNum;i++){write_attribute(tra->stopoverTimes[i]);}
+    for(int i=0;i<100;i++)
+        for(int j=0;j<tra->stationNum;j++){write_attribute(tra->stationTicketRemains[i][j]);}
+#undef write_attribute
+    trainFile.write(buffer, sizeof(buffer));
+
+    train_file_size += siz;
+    trainOffset[rt]=siz;
+   // defaultOut<<rt<<' '<<trainOffset[rt]<<endl;
+    return rt;
 }
 
 void addtime(int& date, int& tim, int t) {
@@ -123,13 +209,24 @@ bool TrainManager::Add_train(const trainID_t& t, int stationNUM, int seatNUM, ch
     tra.type = type;
     tra.releaseState = false;
     tra.ticket_head = tra.ticket_end = -1;
-    for (int i = 0; i < stationNUM; i++)strcpy(tra.stations[i], stations[i]);
+    tra.stations=new char*[stationNUM];
+    for (int i = 0; i < stationNUM; i++){
+        tra.stations[i]=new char[l_han(STATIONS_LEN)];
+        strcpy(tra.stations[i], stations[i]);
+    }
+    tra.prices=new int[stationNUM];
+    tra.prices[0]=0;
     for (int i = 1; i < stationNUM; i++)tra.prices[i] = prices[i-1];
+    tra.travelTimes=new int[stationNUM];
     for (int i = 0; i < stationNUM-1; i++)tra.travelTimes[i] = travelTimes[i];
+    tra.stopoverTimes=new int[stationNUM];
     for (int i = 1; i < stationNUM-1; i++)tra.stopoverTimes[i] = stopoverTimes[i-1];
     int tmp = 0;
-    for (int day = saleDate/10000; day <= saleDate%10000; addtime(day, tmp, 24*60))
+    for (int day=0; day<100; day++)tra.stationTicketRemains[day]=new int[stationNUM];
+    for (int day = saleDate/10000; day <= saleDate%10000; addtime(day, tmp, 24*60)){
+        tra.stationTicketRemains[calcdays(saleDate/10000, day)]=new int[stationNUM];
         for (int i = 0; i < stationNUM-1; i++)tra.stationTicketRemains[calcdays(saleDate/10000, day)][i] = seatNUM;
+    }
     // preprocessing
     int date = 0, tim = tra.startTime;
     for (int i = 0; i < tra.stationNum; i++) {
@@ -546,7 +643,7 @@ TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_mana
 }
 TrainManager::TrainManager(const std::string& file_path, const std::string& trainid_index_path,
                            const std::string& station_index_path, const std::string& train_info_path,
-                           const std::string& station_info_path)
+                           const std::string& station_info_path,const std::string& offset_info_path)
         : train_cache(51, [this](DiskLoc_T off, train* tra) {
                           assert(trainFile.good());
                           loadTrain(trainFile, off, tra);
@@ -557,7 +654,7 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
                       }),
           trainidToOffset(trainid_index_path, 107),
           stationTotrain(station_index_path, 157),
-          head(nullptr), defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path) {
+          head(nullptr), defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path), offset_info_path(offset_info_path) {
     // todo fix head because it doesn't work on file yet.
     trainFile.open(file_path);
     //metadata
@@ -574,6 +671,7 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
 #undef read_attribute
     ds::SerialVector<trainID_t>::deserialize(trainlist, train_info_path);
     ds::SerialMap<station_t, int>::deserialize(stationlist, station_info_path);
+    ds::SerialMap<DiskLoc_T , int>::deserialize(trainOffset, offset_info_path);
 }
 
 TrainManager::~TrainManager() {
@@ -594,6 +692,7 @@ TrainManager::~TrainManager() {
     trainFile.close();
     ds::SerialVector<trainID_t>::serialize(trainlist, train_info_path);
     ds::SerialMap<station_t, int>::serialize(stationlist, station_info_path);
+    ds::SerialMap<DiskLoc_T, int>::serialize(trainOffset, offset_info_path);
 }
 
 

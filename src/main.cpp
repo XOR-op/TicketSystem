@@ -20,6 +20,7 @@ using namespace bptree;
 void init(){
     ds::SerialVector<trainID_t>::Init(TRAIN_INFO_PATH);
     ds::SerialMap<station_t,int>::Init(STATION_INFO_PATH);
+    ds::SerialMap<DiskLoc_T ,int>::Init(OFFSET_INFO_PATH);
     LRUBPTree<trainID_t, DiskLoc_T>::Init(TRAIN_TRAIN_ID_INDEX_PATH);
     LRUBPTree<long long, int>::Init(TRAIN_STATION_INDEX_PATH);
     LRUBPTree<username_t, DiskLoc_T>::Init(USER_INDEX_PATH);
@@ -32,6 +33,7 @@ void init(){
 void cleanAll(){
     remove(TRAIN_INFO_PATH);
     remove(STATION_INFO_PATH);
+    remove(OFFSET_INFO_PATH);
     remove(TRAIN_STATION_INDEX_PATH);
     remove(TRAIN_TRAIN_ID_INDEX_PATH);
     remove(PENDING_PATH);
@@ -44,7 +46,7 @@ int instance(){
     if (needInit()) init();
     auto* user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
     auto* train_mgr= new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH, TRAIN_INFO_PATH,
-                                      STATION_INFO_PATH);
+                                      STATION_INFO_PATH,OFFSET_INFO_PATH);
     auto* order_mgr=new UserOrderManager(ORDER_PATH);
     auto* pending_mgr=new PendingTicketManager(PENDING_PATH);
     vars binding(train_mgr,user_mgr,order_mgr,pending_mgr);
@@ -117,7 +119,7 @@ int instance(){
                     delete pending_mgr;
                     init();
                     user_mgr=new UserManager(USER_PATH, USER_INDEX_PATH);
-                    train_mgr= new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH,TRAIN_INFO_PATH,STATION_INFO_PATH);
+                    train_mgr= new TrainManager(TRAIN_PATH, TRAIN_TRAIN_ID_INDEX_PATH, TRAIN_STATION_INDEX_PATH,TRAIN_INFO_PATH,STATION_INFO_PATH,OFFSET_INFO_PATH);
                     order_mgr=new UserOrderManager(ORDER_PATH);
                     pending_mgr=new PendingTicketManager(PENDING_PATH);
                     binding=vars(train_mgr,user_mgr,order_mgr,pending_mgr);
@@ -154,17 +156,13 @@ int instance(){
 
 }
 int main() {
-#define NDEBUG
-#ifndef NDEBUG
     // debug only
+    freopen("my.out","w",stdout);
     cleanAll();
     for(int i=1;i<=5;++i) {
         std::ifstream ifs("../testData/data1/data/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
     }
-#else
-    instance();
-#endif
     return 0;
 }
