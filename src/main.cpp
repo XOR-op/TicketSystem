@@ -156,13 +156,17 @@ int instance(){
 
 }
 int main() {
+#define NDEBUG
+#ifndef NDEBUG
     // debug only
-    freopen("my.out","w",stdout);
     cleanAll();
     for(int i=1;i<=5;++i) {
         std::ifstream ifs("../testData/data1/data/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
     }
+#else
+    instance();
+#endif
     return 0;
 }
