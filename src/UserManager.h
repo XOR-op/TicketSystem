@@ -20,7 +20,7 @@ namespace t_sys {
         DiskLoc_T user_file_size;
         int is_null;
         std::ostream& defaultOut;
-        cache::SLRUCache<DiskLoc_T, user> user_cache;
+        cache::LRUCache<DiskLoc_T, user> user_cache;
         ds::unordered_map<username_t, int> onlinePool; // username -> privilege
         bptree::LRUBPTree<username_t, DiskLoc_T> usernameToOffset;
 

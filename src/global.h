@@ -24,6 +24,7 @@ namespace t_sys{
     str_t PENDING_PATH="/tmp/ticket_system/pending.db";
     str_t TRAIN_INFO_PATH="/tmp/ticket_system/ticket.dat";
     str_t STATION_INFO_PATH="/tmp/ticket_system/station.dat";
+    str_t OFFSET_INFO_PATH="/tmp/ticket_system/offset.dat";
 #else
     str_t USER_PATH="./user_manager.db";
     str_t TRAIN_PATH="./train_manager.db";

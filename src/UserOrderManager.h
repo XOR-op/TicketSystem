@@ -9,7 +9,8 @@
 #include <cstring>
 #include <iostream>
 #include "structure.h"
-#include "../basic_component//LRU.h"
+#include "../basic_component/LRU.h"
+#include "../basic_component/SLRU.h"
 #include "../basic_component/PageManager.h"
 
 using std::ios;
@@ -32,7 +33,7 @@ namespace t_sys {
         const static DiskLoc_T NO_NEXT = 0;
 //        std::fstream file;
         std::fstream file;
-        cache::LRUCache<DiskLoc_T,_order_block> order_block_cache;
+        cache::SLRUCache<DiskLoc_T,_order_block> order_block_cache;
         DiskLoc_T order_file_size;
 
         DiskLoc_T extend(const order* record, DiskLoc_T where);

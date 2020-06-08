@@ -4,12 +4,12 @@
 
 #ifndef TICKETSYSTEM_DEBUG_H
 #define TICKETSYSTEM_DEBUG_H
-//#include <unistd.h>
+#include <unistd.h>
 #include <fstream>
 #include <iostream>
 //#define NDEBUG
 namespace Debug{
-    /*
+//    /*
     static void process_mem_usage(double& vm_usage, double& resident_set)
     {
          //
@@ -50,7 +50,7 @@ namespace Debug{
         vm_usage     = vsize / 1024.0;
         resident_set = rss * page_size_kb;
     }
-    */
+//    */
     class CacheMissRater{
         std::ostream& printPortion(int a,int b){
             if(total_count==0){
@@ -59,6 +59,7 @@ namespace Debug{
             }
             return std::cout<<(100*(double)a/(double )b)<<'%'<<std::endl;
         }
+        double cal(int a,int b){return (double )a/(double )b;}
     public:
         int hit_count=0,
             hot_hit_count=0,
@@ -66,20 +67,33 @@ namespace Debug{
             miss_count=0,
             total_count=0,
             dirty_count=0;
+        double hit_rate,miss_rate,hot_rate,cold_rate,dirty_rate;
+        void update(){
+            hit_rate=cal(hit_count,total_count);
+            miss_rate=cal(miss_count,total_count);
+            hot_rate=cal(hot_hit_count,hit_count);
+            cold_rate=cal(cold_hit_count,hit_count);
+            dirty_rate=cal(dirty_count,total_count);
+        }
         void hot(){
             ++hit_count,++hot_hit_count,++total_count;
+            update();
         }
         void cold(){
             ++hit_count,++cold_hit_count,++total_count;
+            update();
         }
         void miss(){
             ++miss_count,++total_count;
+            update();
         }
         void hit(){
             ++hit_count,++total_count;
+            update();
         }
         void dirty(){
             ++dirty_count;
+            update();
         }
         bool good()const {return ((hot_hit_count+cold_hit_count==hit_count)||(hot_hit_count==0&&cold_hit_count==0))&&
                     (hit_count+miss_count==total_count);}
@@ -102,6 +116,5 @@ namespace Debug{
             printPortion(miss_count,hit_count);
         }
     };
-    extern CacheMissRater LRUrater,SLRUrater;
 }
 #endif //TICKETSYSTEM_DEBUG_H

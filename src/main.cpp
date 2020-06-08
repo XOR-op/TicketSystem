@@ -148,6 +148,7 @@ int instance(){
         }
 #endif
     }
+
     delete user_mgr;
     delete train_mgr;
     delete order_mgr;

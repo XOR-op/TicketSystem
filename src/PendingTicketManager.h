@@ -12,7 +12,7 @@ namespace t_sys{
     private:
         std::fstream pendingFile;
         DiskLoc_T pending_file_size;
-        cache::LRUCache<DiskLoc_T ,pending_order> pending_cache;
+        cache::SLRUCache<DiskLoc_T ,pending_order> pending_cache;
     public:
         explicit PendingTicketManager(const std::string& path);
         ~PendingTicketManager();

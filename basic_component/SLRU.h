@@ -7,7 +7,7 @@
 #include <functional>
 #include <cassert>
 #include "../include/unordered_map.h"
-//#include "../include/debug.h"
+#include "../include/debug.h"
 //extern Debug::CacheMissRater SLRUrater;
 //using Debug::SLRUrater;
 namespace cache{
@@ -45,8 +45,13 @@ namespace cache{
 
         func_load_t<DiskLoc_T,T> f_load;
         func_expire_t<DiskLoc_T,T> f_expire;
-        void expire(node_ptr np)const {
-            if(np->dirty_bit)f_expire(np->offset,&np->data);
+        void expire(node_ptr np) {
+            if(np->dirty_bit){
+                f_expire(np->offset,&np->data);
+#ifndef NDEBUG
+                SLRUrater.dirty();
+#endif
+            }
             delete np;
         }
         node_ptr load(DiskLoc_T offset){
@@ -70,6 +75,7 @@ namespace cache{
          * load function is used to read a structure from offset(DiskLoc_T) in disk to space(T*) in memory
          * expire function is used to write a structure to offset(DiskLoc_T) in disk from space(T*) in memory
          */
+
         SLRUCache(size_t size,func_load_t<DiskLoc_T,T> load_func, func_expire_t<DiskLoc_T,T> expire_func)
                 :  f_load(load_func), f_expire(expire_func){
             hot_head=new _node_<DiskLoc_T,T>;
@@ -79,7 +85,9 @@ namespace cache{
             hot_max=size/8*5;
             cold_max=size-hot_max;
         }
-
+#ifndef NDEBUG
+        Debug::CacheMissRater SLRUrater;
+#endif
         SLRUCache(const SLRUCache&) = delete;
 
         SLRUCache& operator=(const SLRUCache&) = delete;
@@ -102,10 +110,14 @@ namespace cache{
 
         DataPtr get(DiskLoc_T offset) {
             if(auto iter=hot_table.find(offset);iter!=hot_table.end()){
-//                SLRUrater.hot();
+#ifndef NDEBUG
+                SLRUrater.hot();
+#endif
                 return &(iter->second->data);
             } else if(iter=cold_table.find(offset);iter!=cold_table.end()){
-//                SLRUrater.cold();
+#ifndef NDEBUG
+                SLRUrater.cold();
+#endif
                 node_ptr cur=iter->second;
                 cur->detach();
                 cold_table.erase(offset);
@@ -121,7 +133,9 @@ namespace cache{
                 return &(cur->data);
             } else{
                 // not in cache
-//                SLRUrater.miss();
+#ifndef NDEBUG
+                SLRUrater.miss();
+#endif
                 node_ptr cur=load(offset);
                 cur->attach(cold_head);
                 cold_table[offset]=cur;

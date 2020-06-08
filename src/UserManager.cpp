@@ -128,7 +128,7 @@ bool UserManager::Add_user(UserOrderManager* ord_manager, const username_t* cur_
     return true;
 }
 UserManager::UserManager(const std::string& file_path,const std::string& username_index_path)
-        : user_cache(51, [this](DiskLoc_T off, user* usr){loadUser(userFile, off, usr);},
+        : user_cache(401, [this](DiskLoc_T off, user* usr){loadUser(userFile, off, usr);},
                      [this](DiskLoc_T off,const user* usr){saveUser(userFile,off,usr);}),
           usernameToOffset(username_index_path,107), defaultOut(std::cout)
 {
