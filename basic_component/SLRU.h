@@ -12,7 +12,7 @@
 //using Debug::SLRUrater;
 namespace cache{
     template <typename DiskLoc_T,typename T>
-    using func_expire_t =std::function<void(DiskLoc_T,const T*)>;
+    using func_expire_t =std::function<void(DiskLoc_T,T*)>;
     template <typename DiskLoc_T,typename T>
     using func_load_t=std::function<void(DiskLoc_T, T*)>;
 
@@ -31,6 +31,9 @@ namespace cache{
             next->prev= this,prev->next= this;
         }
         _node_(){dirty_bit= false;}
+        ~_node_(){
+            data.~T();
+        }
     };
 
     template <typename DiskLoc_T,typename T>
@@ -67,7 +70,7 @@ namespace cache{
                 expire(cur);
                 cur=bk;
             }
-            delete head;
+            free(head);
             head= nullptr;
         }
     public:
@@ -78,8 +81,8 @@ namespace cache{
 
         SLRUCache(size_t size,func_load_t<DiskLoc_T,T> load_func, func_expire_t<DiskLoc_T,T> expire_func)
                 :  f_load(load_func), f_expire(expire_func){
-            hot_head=new _node_<DiskLoc_T,T>;
-            cold_head=new _node_<DiskLoc_T,T>;
+            hot_head=(node_ptr)malloc(sizeof(_node_<DiskLoc_T,T>));
+            cold_head=(node_ptr )malloc(sizeof(_node_<DiskLoc_T,T>));
             hot_head->next=hot_head->prev=hot_head;
             cold_head->prev=cold_head->next=cold_head;
             hot_max=size/8*5;

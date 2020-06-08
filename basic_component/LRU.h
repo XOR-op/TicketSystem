@@ -14,7 +14,7 @@
 namespace cache{
 
     template <typename DiskLoc_T,typename T>
-    using func_expire_t =std::function<void(DiskLoc_T,const T*)>;
+    using func_expire_t =std::function<void(DiskLoc_T, T*)>;
     template <typename DiskLoc_T,typename T>
     using func_load_t=std::function<void(DiskLoc_T, T*)>;
 

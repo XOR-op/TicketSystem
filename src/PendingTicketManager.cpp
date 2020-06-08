@@ -61,8 +61,9 @@ void PendingTicketManager::allocate_tickets(UserOrderManager* ord_manager, train
                 prev_ptr->nxt = pending_o->nxt;
                 pending_cache.set_dirty_bit(prev_ofst);
             }
+            auto backup=pending_o->nxt;
             pending_cache.remove(where);
-            where = pending_o->nxt;
+            where = backup;
         } else {
             prev_ofst = where, where = pending_o->nxt;
         }

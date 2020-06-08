@@ -38,7 +38,7 @@ namespace t_sys {
         std::string train_info_path,station_info_path,offset_info_path;
 
         void loadTrain(std::fstream& ifs, DiskLoc_T offset, train* tra);
-        void saveTrain(std::fstream& ofs, DiskLoc_T offset, const train* tra);
+        void saveTrain(std::fstream& ofs, DiskLoc_T offset, train* tra);
         int getsize(train* t);
         DiskLoc_T increaseFile(train* tra);
         void print_ticket(const std::pair<int, std::pair<int, int>>& A,int date);

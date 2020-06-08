@@ -54,7 +54,10 @@ namespace t_sys {
         bool operator!=(const station_t& rhs) const { return strcmp(st, rhs.st) != 0; }
     };
 
+    static int calcdays(int start, int end);
+
     struct train {
+    public:
         DiskLoc_T offset;
         trainID_t trainID;
         int stationNum;     // n
@@ -67,10 +70,31 @@ namespace t_sys {
         int* prices;
         int* travelTimes;
         int* stopoverTimes;
-        DiskLoc_T ticket_head,ticket_end;
+        int** stationTicketRemains;
+        DiskLoc_T ticket_head, ticket_end;
         //release时，travelTimes[]、stopoverTimes[] 将会做一个前缀和，也就是变成每个站的离开时间和到达时间
         //形式为dddmmss,ddd是天没有月的概念，始发站为0
-        int** stationTicketRemains;
+        void destruct() {
+            delete[] prices;
+            delete[] travelTimes;
+            delete[] stopoverTimes;
+            if (stations) {
+                for (int i = 0; i < stationNum; ++i)
+                    delete[] stations[i];
+                delete[] stations;
+            }
+            if (stationTicketRemains) {
+                for (int i = 0, ed = calcdays(saleDate/10000, saleDate%10000)+1; i < ed; ++i)
+                    delete[] stationTicketRemains[i];
+                delete[] stationTicketRemains;
+            }
+            prices = travelTimes = stopoverTimes = nullptr;
+            stations = nullptr;
+            stationTicketRemains = nullptr;
+        }
+        ~train() {
+            destruct();
+        }
     };
 
     struct order {
@@ -90,22 +114,34 @@ namespace t_sys {
         char to[41];
     };
 
-    struct pending_order{
+    struct pending_order {
         DiskLoc_T block;
         DiskLoc_T nxt;
         int offset_in_block;
         int day;
         int key;
         int num;
-        int s,t;
+        int s, t;
     };
-    static int parsingDate(const char* str){
+    static int parsingDate(const char* str) {
         // str guaranteed be 5+1 long
         return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
     }
 
-    static int parsingTime(const char* str){
+    static int parsingTime(const char* str) {
         return (str[0]-'0')*1000+(str[1]-'0')*100+(str[3]-'0')*10+str[4]-'0';
+    }
+
+    static int calcdays(int start, int end) {
+        if (start/100 == end/100)return end-start;
+        else {
+            int ans = (start/100 == 6)?30-start%100: 31-start%100;
+            for (int i = start/100+1; i < end/100; i++) {
+                if (i == 7 || i == 8 || i == 10)ans += 31;
+                else ans += 30;
+            }
+            return ans+end%100;
+        }
     }
 
 }
@@ -121,6 +157,7 @@ namespace std {
             return hash;
         }
     };
+
     template<>
     struct hash<t_sys::station_t> {
         static unsigned int myhash(const void* key, int len, unsigned int seed) {
@@ -153,7 +190,7 @@ namespace std {
             return h;
         }
         std::size_t operator()(const t_sys::station_t& ctx) const {
-            return myhash(ctx.st,strlen(ctx.st),static_cast<size_t>(0xc70f6907UL));
+            return myhash(ctx.st, strlen(ctx.st), static_cast<size_t>(0xc70f6907UL));
         }
     };
 }
