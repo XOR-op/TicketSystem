@@ -11,7 +11,7 @@
 #include "../basic_component/SLRU.h"
 #include "../basic_component/LRUBPtree.h"
 #include "../include/vector.hpp"
-using std::endl;
+//using std::endl;
 namespace t_sys {
     class TrainManager{
     private:

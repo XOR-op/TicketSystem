@@ -12,9 +12,11 @@
 #include "commands.h"
 //#include "../include/debug.h"
 
-using namespace std;
 using namespace t_sys;
 using namespace bptree;
+using std::cin;
+using std::cout;
+using std::to_string;
 //Debug::CacheMissRater LRUrater,SLRUrater;
 //using Debug::SLRUrater;
 void init(){
@@ -157,7 +159,8 @@ int instance(){
 
 }
 int main() {
-#define NDEBUG
+    std::ios::sync_with_stdio(false);
+//#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();

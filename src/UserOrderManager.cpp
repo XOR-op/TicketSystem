@@ -76,7 +76,7 @@ void UserOrderManager::printAllOrders(std::ostream& ofs, DiskLoc_T head){
             auto& ref=ptr->data[i];
             ofs<<(ref.stat==order::SUCCESS?"[success]":(ref.stat==order::PENDING?"[pending]":"[refunded]"))
                <<' '<<ref.trainID<<' '<<ref.from<<' '<<express(str_buf,ref.leaveTime)<<" -> "<<ref.to
-               <<' '<<express(str_buf,ref.arriveTime)<<' '<<ref.price<<' '<<ref.num<<std::endl;
+               <<' '<<express(str_buf,ref.arriveTime)<<' '<<ref.price<<' '<<ref.num<<endl;
         }
         head=ptr->nextOffset;
         assert(head<1073741824); // 1GB, should not occur in local test

@@ -12,7 +12,6 @@
 #include "../basic_component/SLRU.h"
 #include "../basic_component/LRUBPtree.h"
 
-using std::endl;
 namespace t_sys {
     class UserManager {
     private:

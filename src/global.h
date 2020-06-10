@@ -58,5 +58,12 @@ namespace t_sys{
         f.close();
     }
 
+#define OJ_SPEEDUP
+#ifndef OJ_SPEEDUP
+    using std::endl;
+#else
+    const char endl='\n';
+#endif
+
 }
 #endif //TICKETSYSTEM_GLOBAL_H
