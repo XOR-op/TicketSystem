@@ -116,7 +116,7 @@ void TrainManager::saveTrain(std::fstream& ofs, DiskLoc_T offset,train* tra) {
     }
 #undef write_attribute
     ofs.write(buffer, sizeof(buffer));
-    tra->destruct();
+    tra->~train();
 }
 int TrainManager::getsize(train* t) {
     int siz = 0;

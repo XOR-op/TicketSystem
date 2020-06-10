@@ -57,23 +57,7 @@ namespace t_sys {
     static int calcdays(int start, int end);
 
     struct train {
-    public:
-        DiskLoc_T offset;
-        trainID_t trainID;
-        int stationNum;     // n
-        int seatNum;
-        int startTime;
-        int saleDate; //mmddmmdd
-        bool releaseState;
-        char type;
-        char** stations;
-        int* prices;
-        int* travelTimes;
-        int* stopoverTimes;
-        int** stationTicketRemains;
-        DiskLoc_T ticket_head, ticket_end;
-        //release时，travelTimes[]、stopoverTimes[] 将会做一个前缀和，也就是变成每个站的离开时间和到达时间
-        //形式为dddmmss,ddd是天没有月的概念，始发站为0
+    private:
         void destruct() {
             delete[] prices;
             delete[] travelTimes;
@@ -92,6 +76,23 @@ namespace t_sys {
             stations = nullptr;
             stationTicketRemains = nullptr;
         }
+    public:
+        DiskLoc_T offset;
+        trainID_t trainID;
+        int stationNum;     // n
+        int seatNum;
+        int startTime;
+        int saleDate; //mmddmmdd
+        bool releaseState;
+        char type;
+        char** stations;
+        int* prices;
+        int* travelTimes;
+        int* stopoverTimes;
+        int** stationTicketRemains;
+        DiskLoc_T ticket_head, ticket_end;
+        //release时，travelTimes[]、stopoverTimes[] 将会做一个前缀和，也就是变成每个站的离开时间和到达时间
+        //形式为dddmmss,ddd是天没有月的概念，始发站为0
         ~train() {
             destruct();
         }

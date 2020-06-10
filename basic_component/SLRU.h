@@ -116,6 +116,9 @@ namespace cache{
 #ifndef NDEBUG
                 SLRUrater.hot();
 #endif
+                node_ptr cur=iter->second;
+                cur->detach();
+                cur->attach(hot_head);
                 return &(iter->second->data);
             } else if(iter=cold_table.find(offset);iter!=cold_table.end()){
 #ifndef NDEBUG
