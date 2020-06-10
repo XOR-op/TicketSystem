@@ -74,18 +74,24 @@ void TrainManager::loadTrain(std::fstream& ifs, DiskLoc_T offset, train* tra) {
     tra->stations = new char* [tra->stationNum];
     for (int i = 0; i < tra->stationNum; i++) {
         tra->stations[i] = new char[l_han(STATIONS_LEN)];
-        for (int j = 0; j < l_han(STATIONS_LEN); j++) { read_attribute(tra->stations[i][j]); }
+        memcpy((void*)tra->stations[i],buf,l_han(STATIONS_LEN));buf+=l_han(STATIONS_LEN);
+//        for (int j = 0; j < l_han(STATIONS_LEN); j++) { read_attribute(tra->stations[i][j]); }
     }
     tra->prices = new int[tra->stationNum];
-    for (int i = 0; i < tra->stationNum; i++) { read_attribute(tra->prices[i]); }
     tra->travelTimes = new int[tra->stationNum];
-    for (int i = 0; i < tra->stationNum; i++) { read_attribute(tra->travelTimes[i]); }
     tra->stopoverTimes = new int[tra->stationNum];
-    for (int i = 0; i < tra->stationNum; i++) { read_attribute(tra->stopoverTimes[i]); }
-    tra->stationTicketRemains = new int* [calcdays(tra->saleDate/10000, tra->saleDate%10000)+1];
-    for (int i = 0; i <= calcdays(tra->saleDate/10000, tra->saleDate%10000); i++) {
+//    for (int i = 0; i < tra->stationNum; i++) { read_attribute(tra->prices[i]); }
+//    for (int i = 0; i < tra->stationNum; i++) { read_attribute(tra->travelTimes[i]); }
+//    for (int i = 0; i < tra->stationNum; i++) { read_attribute(tra->stopoverTimes[i]); }
+    memcpy((void*)tra->prices,buf,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+    memcpy((void*)tra->travelTimes,buf,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+    memcpy((void*)tra->stopoverTimes,buf,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+    int day=calcdays(tra->saleDate/10000, tra->saleDate%10000);
+    tra->stationTicketRemains = new int* [day+1];
+    for (int i = 0; i <= day; i++) {
         tra->stationTicketRemains[i] = new int[tra->stationNum];
-        for (int j = 0; j < tra->stationNum; j++) { read_attribute(tra->stationTicketRemains[i][j]); }
+        memcpy((void*)tra->stationTicketRemains[i],buf,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+//        for (int j = 0; j < tra->stationNum; j++) { read_attribute(tra->stationTicketRemains[i][j]); }
     }
 
 #undef read_attribute
@@ -105,15 +111,19 @@ void TrainManager::saveTrain(std::fstream& ofs, DiskLoc_T offset, train* tra) {
     write_attribute(tra->type);
     write_attribute(tra->ticket_head);
     write_attribute(tra->ticket_end);
-    for (int i = 0; i < tra->stationNum; i++)
-        for (int j = 0; j < l_han(STATIONS_LEN); j++) { write_attribute(tra->stations[i][j]); }
-    for (int i = 0; i < tra->stationNum; i++) { write_attribute(tra->prices[i]); }
-    for (int i = 0; i < tra->stationNum; i++) { write_attribute(tra->travelTimes[i]); }
-    for (int i = 0; i < tra->stationNum; i++) { write_attribute(tra->stopoverTimes[i]); }
-    for (int i = 0; i <= calcdays(tra->saleDate/10000, tra->saleDate%10000); i++) {
-        for (int j = 0; j < tra->stationNum; j++) {
-            write_attribute(tra->stationTicketRemains[i][j]);
-        }
+    for (int i = 0; i < tra->stationNum; i++) {
+        memcpy(buf,(void*)tra->stations[i],l_han(STATIONS_LEN));buf+=l_han(STATIONS_LEN);
+//        for (int j = 0; j < l_han(STATIONS_LEN); j++) { write_attribute(tra->stations[i][j]); }
+    }
+    memcpy(buf,(void*)tra->prices,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+    memcpy(buf,(void*)tra->travelTimes,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+    memcpy(buf,(void*)tra->stopoverTimes,sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+//    for (int i = 0; i < tra->stationNum; i++) { write_attribute(tra->prices[i]); }
+//    for (int i = 0; i < tra->stationNum; i++) { write_attribute(tra->travelTimes[i]); }
+//    for (int i = 0; i < tra->stationNum; i++) { write_attribute(tra->stopoverTimes[i]); }
+    for (int i = 0,ed=calcdays(tra->saleDate/10000, tra->saleDate%10000);i<=ed; i++) {
+        memcpy(buf,(void*)tra->stationTicketRemains[i],sizeof(int)*tra->stationNum);buf+=sizeof(int)*tra->stationNum;
+//        for (int j = 0; j < tra->stationNum; j++) {write_attribute(tra->stationTicketRemains[i][j]);}
     }
 #undef write_attribute
     ofs.write(buffer, sizeof(buffer));
