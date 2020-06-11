@@ -420,10 +420,6 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                                               stationlist[station_t(Tstation)]*10000LL+9999);
     int minkey = INT32_MAX;
     pair<int, pair<int, int>> A, B; // {train,{stat_s*100+stat_t,date}}
-    if(strcmp("广东省梅州市",Sstation)==0&&strcmp("河南省禹州市",Tstation)==0&&date==730){
-        // todo remove
-        int r=0;--r;
-    }
     for (int i = 0; i < S.size(); i++)
         for (int j = 0; j < T.size(); j++)
             if (train_id_f(S[i].first) != train_id_f(T[j].first)) {
@@ -470,15 +466,6 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                             }
                             int key;
                             if (order == TIME) {
-                                /*
-                                key = calctime(tra_1_ptr->stopoverTimes[first_kth_station],
-                                               tra_1_ptr->travelTimes[mid_stat_tra_1])+
-                                      calctime(getTime(tra_1_ptr->travelTimes[mid_stat_tra_1]),
-                                               10000*interval_day+
-                                               tra_2_ptr->stopoverTimes[mid_stat_tra_2])+
-                                      calctime(tra_2_ptr->stopoverTimes[mid_stat_tra_2],
-                                               tra_2_ptr->travelTimes[second_kth_station]);
-                                               */
                                 int wait_min=min_fmt(getTime(tra_2_ptr->stopoverTimes[mid_stat_tra_2]))
                                         -min_fmt(getTime(tra_1_ptr->travelTimes[mid_stat_tra_1]))
                                         +24*60*interval_day;
@@ -653,7 +640,7 @@ TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_mana
 TrainManager::TrainManager(const std::string& file_path, const std::string& trainid_index_path,
                            const std::string& station_index_path, const std::string& train_info_path,
                            const std::string& station_info_path, const std::string& offset_info_path)
-        : train_cache(51, [this](DiskLoc_T off, train* tra) {
+        : train_cache(401, [this](DiskLoc_T off, train* tra) {
                           assert(trainFile.good());
                           loadTrain(trainFile, off, tra);
                       },

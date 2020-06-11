@@ -164,7 +164,7 @@ int main() {
 #ifndef NDEBUG
     // debug only
     cleanAll();
-    for(int i=1;i<=1;++i) {
+    for(int i=1;i<=10;++i) {
         std::ifstream ifs("../testData/big/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
