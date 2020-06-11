@@ -649,7 +649,7 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
                           saveTrain(trainFile, off, tra);
                       }),
           trainidToOffset(trainid_index_path, 107),
-          stationTotrain(station_index_path, 157),
+          stationTotrain(station_index_path, 107),
           head(nullptr), defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path),
           offset_info_path(offset_info_path) {
     // todo fix head because it doesn't work on file yet.

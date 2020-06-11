@@ -83,7 +83,7 @@ void UserOrderManager::printAllOrders(std::ostream& ofs, DiskLoc_T head){
     }
 }
 
-UserOrderManager::UserOrderManager(const std::string& file_path): order_block_cache(509,
+UserOrderManager::UserOrderManager(const std::string& file_path): order_block_cache(301,
                                                                                     [this](DiskLoc_T where,_order_block* blk){readBlock(file,where,blk);},
                                                                                     [this](DiskLoc_T where,const _order_block* blk){writeBlock(file,where,blk);}){
     file.open(file_path,ios::binary|ios::in|ios::out);
