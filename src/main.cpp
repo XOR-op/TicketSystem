@@ -160,7 +160,7 @@ int instance(){
 }
 int main() {
     std::ios::sync_with_stdio(false);
-//#define NDEBUG
+#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();

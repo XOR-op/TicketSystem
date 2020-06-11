@@ -36,7 +36,7 @@ std::pair<DiskLoc_T,int> UserOrderManager::appendRecord(DiskLoc_T where, const o
     auto* block_ptr=order_block_cache.get(where);
     if (block_ptr->size == _order_block::COUNT) {
         // extend
-        return {extend(record, where),1}; // 1-based?
+        return {extend(record, where),0};
     } else {
         block_ptr->data[block_ptr->size]=*record;
         block_ptr->size+=1;
