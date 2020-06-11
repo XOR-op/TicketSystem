@@ -160,12 +160,12 @@ int instance(){
 }
 int main() {
     std::ios::sync_with_stdio(false);
-//#define NDEBUG
+#define NDEBUG
 #ifndef NDEBUG
     // debug only
     cleanAll();
-    for(int i=1;i<=10;++i) {
-        std::ifstream ifs("../testData/basic_6/"+to_string(i)+".in");
+    for(int i=1;i<=1;++i) {
+        std::ifstream ifs("../testData/big/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
     }

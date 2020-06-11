@@ -12,13 +12,13 @@ int calcstartday(int date, int days) {
     if (date/100 == 6)return calcstartday(531, days);
     return -1;
 }
-int minute_expression(int x) {
+int min_fmt(int x) {
     // format in dddhhmm
     return x%100+60*(x/100%100)+24*60*(x/10000);
 }
 int calctime(int start, int end) {
     // return dddhhmm
-    int minute = minute_expression(end)-minute_expression(start);
+    int minute = min_fmt(end)-min_fmt(start);
     int rt = minute/(24*60)*10000; // day
     minute %= (24*60);
     rt += minute/60*100+minute%60; // hour and minute
@@ -420,40 +420,44 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                                               stationlist[station_t(Tstation)]*10000LL+9999);
     int minkey = INT32_MAX;
     pair<int, pair<int, int>> A, B; // {train,{stat_s*100+stat_t,date}}
+    if(strcmp("广东省梅州市",Sstation)==0&&strcmp("河南省禹州市",Tstation)==0&&date==730){
+        // todo remove
+        int r=0;--r;
+    }
     for (int i = 0; i < S.size(); i++)
         for (int j = 0; j < T.size(); j++)
             if (train_id_f(S[i].first) != train_id_f(T[j].first)) {
                 trainID_t t1 = trainlist[train_id_f(S[i].first)], t2 = trainlist[train_id_f(T[j].first)];
                 DiskLoc_T loc = trainidToOffset.search(t1).first, loc2 = trainidToOffset.search(t2).first;
-                auto* train_ptr_1st = train_cache.get(loc);
-                auto* train_ptr_2nd = train_cache.get(loc2);
-                int days = getDate(train_ptr_1st->stopoverTimes[S[i].second]);
+                auto* tra_1_ptr = train_cache.get(loc);
+                auto* tra_2_ptr = train_cache.get(loc2);
+                int days = getDate(tra_1_ptr->stopoverTimes[S[i].second]);
                 int startday = calcstartday(date, days);
-                int first_train_start_date = (train_ptr_1st->saleDate)/10000;
-                int first_train_end_date = (train_ptr_1st->saleDate)%10000;
-                int second_train_start_date = (train_ptr_2nd->saleDate)/10000;
-                int second_train_end_date = (train_ptr_2nd->saleDate)%10000;
+                int first_train_start_date = (tra_1_ptr->saleDate)/10000;
+                int first_train_end_date = (tra_1_ptr->saleDate)%10000;
+                int second_train_start_date = (tra_2_ptr->saleDate)/10000;
+                int second_train_end_date = (tra_2_ptr->saleDate)%10000;
                 // check s_train date
                 if (startday < first_train_start_date || startday > first_train_end_date)continue;
                 //check_transfer
                 int first_kth_station = S[i].second, second_kth_station = T[j].second;
-                for (int first_train_mid_station = first_kth_station+1;
-                     first_train_mid_station < train_ptr_1st->stationNum; first_train_mid_station++) {
-                    for (int second_train_mid_station = 0;
-                         second_train_mid_station < second_kth_station; second_train_mid_station++) {
+                for (int mid_stat_tra_1 = first_kth_station+1;
+                     mid_stat_tra_1 < tra_1_ptr->stationNum; mid_stat_tra_1++) {
+                    for (int mid_stat_tra_2 = 0;
+                         mid_stat_tra_2 < second_kth_station; mid_stat_tra_2++) {
                         // for every station in train_1st, check if it exists in train_2nd
-                        if (strcmp(train_ptr_1st->stations[first_train_mid_station],
-                                   train_ptr_2nd->stations[second_train_mid_station]) == 0) {
+                        if (strcmp(tra_1_ptr->stations[mid_stat_tra_1],
+                                   tra_2_ptr->stations[mid_stat_tra_2]) == 0) {
                             // T_arrive <= T_leave
                             int stopoverday = 0;
-                            if (getTime(train_ptr_1st->travelTimes[first_train_mid_station]) >
-                                getTime(train_ptr_2nd->stopoverTimes[second_train_mid_station]))
+                            if (getTime(tra_1_ptr->travelTimes[mid_stat_tra_1]) >
+                                getTime(tra_2_ptr->stopoverTimes[mid_stat_tra_2]))
                                 stopoverday = 1;
                             // check t_train date
                             int second_leave_day = startday, ___ = 0;
                             addtime(second_leave_day, ___,
-                                    24*60*(getDate(train_ptr_1st->travelTimes[first_train_mid_station])+stopoverday));
-                            int days2 = getDate(train_ptr_2nd->stopoverTimes[second_train_mid_station]);
+                                    24*60*(getDate(tra_1_ptr->travelTimes[mid_stat_tra_1])+stopoverday));
+                            int days2 = getDate(tra_2_ptr->stopoverTimes[mid_stat_tra_2]);
                             int beststartday2 = calcstartday(second_leave_day, days2); // 2th train earliest leave day
                             if (beststartday2 > second_train_end_date)break;
                             int interval_day = stopoverday;
@@ -462,38 +466,41 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                 interval_day = second_train_start_date-beststartday2+stopoverday;
                                 second_leave_day = second_train_start_date;
                                 addtime(second_leave_day, ___,
-                                        24*60*getDate(train_ptr_2nd->stopoverTimes[second_train_mid_station]));
+                                        24*60*getDate(tra_2_ptr->stopoverTimes[mid_stat_tra_2]));
                             }
                             int key;
                             if (order == TIME) {
                                 /*
-                                key = calctime(train_ptr_1st->stopoverTimes[first_kth_station],
-                                               train_ptr_1st->travelTimes[first_train_mid_station])+
-                                      calctime(getTime(train_ptr_1st->travelTimes[first_train_mid_station]),
+                                key = calctime(tra_1_ptr->stopoverTimes[first_kth_station],
+                                               tra_1_ptr->travelTimes[mid_stat_tra_1])+
+                                      calctime(getTime(tra_1_ptr->travelTimes[mid_stat_tra_1]),
                                                10000*interval_day+
-                                               train_ptr_2nd->stopoverTimes[second_train_mid_station])+
-                                      calctime(train_ptr_2nd->stopoverTimes[second_train_mid_station],
-                                               train_ptr_2nd->travelTimes[second_kth_station]);
+                                               tra_2_ptr->stopoverTimes[mid_stat_tra_2])+
+                                      calctime(tra_2_ptr->stopoverTimes[mid_stat_tra_2],
+                                               tra_2_ptr->travelTimes[second_kth_station]);
                                                */
-                                key = -minute_expression(train_ptr_1st->stopoverTimes[first_kth_station])+
-                                      minute_expression(train_ptr_1st->travelTimes[first_train_mid_station])-
-                                      minute_expression(train_ptr_1st->travelTimes[first_train_mid_station])+
-                                      minute_expression(10000*interval_day)+minute_expression(
-                                        train_ptr_2nd->travelTimes[second_kth_station]);
+                                int wait_min=min_fmt(getTime(tra_2_ptr->stopoverTimes[mid_stat_tra_2]))
+                                        -min_fmt(getTime(tra_1_ptr->travelTimes[mid_stat_tra_1]))
+                                        +24*60*interval_day;
+                                key = (min_fmt(tra_1_ptr->travelTimes[mid_stat_tra_1])
+                                        -min_fmt(tra_1_ptr->stopoverTimes[first_kth_station])) // first train time
+                                        +wait_min
+                                      +(min_fmt(tra_2_ptr->travelTimes[second_kth_station])
+                                      -min_fmt(tra_2_ptr->stopoverTimes[mid_stat_tra_2])); // second train time
                             } else {
-                                key = train_ptr_1st->prices[first_train_mid_station]-
-                                      train_ptr_1st->prices[first_kth_station]+
-                                      train_ptr_2nd->prices[second_kth_station]-
-                                      train_ptr_2nd->prices[second_train_mid_station];
+                                key = tra_1_ptr->prices[mid_stat_tra_1]-
+                                      tra_1_ptr->prices[first_kth_station]+
+                                      tra_2_ptr->prices[second_kth_station]-
+                                      tra_2_ptr->prices[mid_stat_tra_2];
                             }
                             if (key < minkey) {
                                 minkey = key;
-                                assert(strcmp(train_ptr_1st->stations[first_train_mid_station],
-                                              train_ptr_2nd->stations[second_train_mid_station]) == 0);
+                                assert(strcmp(tra_1_ptr->stations[mid_stat_tra_1],
+                                              tra_2_ptr->stations[mid_stat_tra_2]) == 0);
                                 A = std::make_pair((int) train_id_f(S[i].first),
-                                                   std::make_pair(first_kth_station*100+first_train_mid_station, date));
+                                                   std::make_pair(first_kth_station*100+mid_stat_tra_1, date));
                                 B = std::make_pair((int) train_id_f(T[j].first),
-                                                   std::make_pair(second_train_mid_station*100+second_kth_station,
+                                                   std::make_pair(mid_stat_tra_2*100+second_kth_station,
                                                                   second_leave_day));
                             }
                             break;
