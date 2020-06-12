@@ -21,7 +21,7 @@ namespace t_sys {
 
     class PageManager {
     private:
-        const static int PAGE_CNT = 128;
+        const static int PAGE_CNT = 100;
         cache::LRUCache<DiskLoc_T, Page> cache;
         size_t file_size;
         FILE* file;

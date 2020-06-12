@@ -130,7 +130,7 @@ bool UserManager::Add_user(UserOrderManager* ord_manager, const username_t* cur_
 UserManager::UserManager(const std::string& file_path,const std::string& username_index_path)
         : user_cache(401, [this](DiskLoc_T off, user* usr){loadUser(userFile, off, usr);},
                      [this](DiskLoc_T off,const user* usr){saveUser(userFile,off,usr);}),
-          usernameToOffset(username_index_path,107), defaultOut(std::cout)
+          usernameToOffset(username_index_path,79), defaultOut(std::cout)
 {
     userFile.open(file_path);
     if(userFile.bad())

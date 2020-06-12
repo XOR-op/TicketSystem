@@ -645,7 +645,7 @@ TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_mana
 TrainManager::TrainManager(const std::string& file_path, const std::string& trainid_index_path,
                            const std::string& station_index_path, const std::string& train_info_path,
                            const std::string& station_info_path, const std::string& offset_info_path)
-        : train_cache(401, [this](DiskLoc_T off, train* tra) {
+        : train_cache(503, [this](DiskLoc_T off, train* tra) {
                           assert(trainFile.good());
                           loadTrain(trainFile, off, tra);
                       },
