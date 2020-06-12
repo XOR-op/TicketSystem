@@ -30,11 +30,6 @@ namespace t_sys {
 
         ds::unordered_map<DiskLoc_T , int>trainOffset;
 
-        struct freenode{
-            freenode* nxt;
-            DiskLoc_T pos;
-        };
-        freenode* head;
         std::string train_info_path,station_info_path,offset_info_path;
 
         void loadTrain(std::fstream& ifs, DiskLoc_T offset, train* tra);

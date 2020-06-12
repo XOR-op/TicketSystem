@@ -214,9 +214,9 @@ bool TrainManager::Add_train(const trainID_t& t, int stationNUM, int seatNUM, ch
     for (int i = 0; i < stationNUM-1; i++)tra.travelTimes[i] = travelTimes[i];
     tra.stopoverTimes = new int[stationNUM];
     for (int i = 1; i < stationNUM-1; i++)tra.stopoverTimes[i] = stopoverTimes[i-1];
-    int tmp = 0;
+    int ___ = 0;
     tra.stationTicketRemains = new int* [calcdays(saleDate/10000, saleDate%10000)+1];
-    for (int day = saleDate/10000; day <= saleDate%10000; addtime(day, tmp, 24*60)) {
+    for (int day = saleDate/10000; day <= saleDate%10000; addtime(day, ___, 24*60)) {
         tra.stationTicketRemains[calcdays(saleDate/10000, day)] = new int[stationNUM];
         for (int i = 0; i < stationNUM-1; i++)tra.stationTicketRemains[calcdays(saleDate/10000, day)][i] = seatNUM;
     }
@@ -418,7 +418,7 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                                               stationlist[station_t(Sstation)]*10000LL+9999);
     ds::vector<pair<long long, int>> T = stationTotrain.range(stationlist[station_t(Tstation)]*10000LL,
                                                               stationlist[station_t(Tstation)]*10000LL+9999);
-    int minkey = INT32_MAX;
+    int minkey = INT32_MAX,min_run_time=INT32_MAX;
     pair<int, pair<int, int>> A, B; // {train,{stat_s*100+stat_t,date}}
     for (int i = 0; i < S.size(); i++)
         for (int j = 0; j < T.size(); j++)
@@ -465,13 +465,13 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                         24*60*getDate(tra_2_ptr->stopoverTimes[mid_stat_tra_2]));
                             }
                             int key;
+                            int first_run_time=(min_fmt(tra_1_ptr->travelTimes[mid_stat_tra_1])
+                                                -min_fmt(tra_1_ptr->stopoverTimes[first_kth_station]));// first train time
                             if (order == TIME) {
                                 int wait_min=min_fmt(getTime(tra_2_ptr->stopoverTimes[mid_stat_tra_2]))
                                         -min_fmt(getTime(tra_1_ptr->travelTimes[mid_stat_tra_1]))
                                         +24*60*interval_day;
-                                key = (min_fmt(tra_1_ptr->travelTimes[mid_stat_tra_1])
-                                        -min_fmt(tra_1_ptr->stopoverTimes[first_kth_station])) // first train time
-                                        +wait_min
+                                key = first_run_time+wait_min
                                       +(min_fmt(tra_2_ptr->travelTimes[second_kth_station])
                                       -min_fmt(tra_2_ptr->stopoverTimes[mid_stat_tra_2])); // second train time
                             } else {
@@ -480,8 +480,13 @@ bool TrainManager::Query_transfer(const char* Sstation, const char* Tstation, in
                                       tra_2_ptr->prices[second_kth_station]-
                                       tra_2_ptr->prices[mid_stat_tra_2];
                             }
-                            if (key < minkey) {
+                            auto cmp_id_then_run_time=[tra_1_ptr, this,first_run_time,min_run_time,&S,i]()->bool {
+                                int rt=strcmp(tra_1_ptr->trainID.ID,trainlist[train_id_f(S[i].first)].ID);
+                                return rt!=0?rt<0:first_run_time<min_run_time;
+                            };
+                            if (key < minkey||(key==minkey&&cmp_id_then_run_time())) {
                                 minkey = key;
+                                min_run_time=first_run_time;
                                 assert(strcmp(tra_1_ptr->stations[mid_stat_tra_1],
                                               tra_2_ptr->stations[mid_stat_tra_2]) == 0);
                                 A = std::make_pair((int) train_id_f(S[i].first),
@@ -650,12 +655,12 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
                       }),
           trainidToOffset(trainid_index_path, 107),
           stationTotrain(station_index_path, 107),
-          head(nullptr), defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path),
+          defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path),
           offset_info_path(offset_info_path) {
     // todo fix head because it doesn't work on file yet.
     trainFile.open(file_path);
     //metadata
-    char buf[sizeof(train_file_size)+sizeof(int)*3+sizeof(head)];
+    char buf[sizeof(train_file_size)+sizeof(int)*3];
     char* ptr = buf;
     trainFile.seekg(0);
     trainFile.read(buf, sizeof(buf));
@@ -664,7 +669,6 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
     read_attribute(train_num);
     read_attribute(station_num);
     read_attribute(ticket_num);
-    read_attribute(head);
 #undef read_attribute
     ds::SerialVector<trainID_t>::deserialize(trainlist, train_info_path);
     ds::SerialMap<station_t, int>::deserialize(stationlist, station_info_path);
@@ -673,14 +677,13 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
 
 TrainManager::~TrainManager() {
     // write metadata
-    char buf[sizeof(train_file_size)+sizeof(int)*3+sizeof(head)];
+    char buf[sizeof(train_file_size)+sizeof(int)*3];
     char* ptr = buf;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(train_file_size);
     write_attribute(train_num);
     write_attribute(station_num);
     write_attribute(ticket_num);
-    write_attribute(head);
 #undef write_attribute
     assert(trainFile.good());
     trainFile.seekp(0);
@@ -695,17 +698,15 @@ TrainManager::~TrainManager() {
 
 void TrainManager::Init(const std::string& file_path) {
     std::fstream f(file_path, ios::out | ios::binary);
-    char buf[sizeof(DiskLoc_T)+sizeof(int)*3+sizeof(freenode*)];
+    char buf[sizeof(DiskLoc_T)+sizeof(int)*3];
     char* ptr = buf;
     DiskLoc_T sz = sizeof(buf);
     int train_num = 0, station_num = 0, ticket_num = 0;
-    freenode* p = nullptr;
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
     write_attribute(sz);
     write_attribute(train_num);
     write_attribute(station_num);
     write_attribute(ticket_num);
-    write_attribute(p);
 #undef write_attribute
     f.write(buf, sizeof(buf));
     f.close();

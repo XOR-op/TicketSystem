@@ -96,7 +96,7 @@ namespace ds {
         explicit unordered_map(size_t bucket_count) : __bucket_count(bucket_count),sz(0) {
             buckets = new __linked_list<Key, T>[bucket_count];
         }
-        unordered_map() : unordered_map(128) {}
+        unordered_map() : unordered_map(127) {}
         unordered_map(const unordered_map& other) = delete;
         unordered_map(unordered_map&& other) = delete;
 
