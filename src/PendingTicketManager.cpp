@@ -10,13 +10,8 @@ static void savependingorder(std::fstream& ofs,DiskLoc_T offset,const pending_or
     ofs.write((char*)po, sizeof(pending_order));
 }
 PendingTicketManager::PendingTicketManager(const std::string& path):pendingFile(path){
-//        pending_cache(71, [this](DiskLoc_T off, pending_order* po) { loadpendingorder(pendingFile, off, po); },
-//                      [this](DiskLoc_T off, const pending_order* po) { savependingorder(pendingFile, off, po); }){
-//    pendingFile.open(path);
     char buf2[sizeof(pending_file_size)+sizeof(freelist_head)];
     char* ptr2 = buf2;
-//    pendingFile.seekg(0);
-//    pendingFile.read(buf2, sizeof(buf2));
     pendingFile.read(buf2,0, sizeof(buf2));
 #define read_attribute(ATTR) memcpy((void*)&ATTR,ptr2,sizeof(ATTR));ptr2+=sizeof(ATTR)
     read_attribute(pending_file_size);
@@ -31,11 +26,6 @@ PendingTicketManager::~PendingTicketManager() {
     write_attribute(pending_file_size);
     write_attribute(freelist_head);
 #undef write_attribute
-//    assert(pendingFile.good());
-//    pendingFile.seekp(0);
-//    pendingFile.write(buf, sizeof(buf));
-//    pending_cache.destruct();
-//    pendingFile.close();
     pendingFile.write(buf,0, sizeof(buf));
 }
 void PendingTicketManager::allocate_tickets(UserOrderManager* ord_manager, train* train_ptr, const order* Order) {
@@ -68,12 +58,8 @@ void PendingTicketManager::allocate_tickets(UserOrderManager* ord_manager, train
                 pendingFile.read((char*)&prev,prev_ofst,sizeof(pending_order));
                 prev.nxt=pending_o->nxt;
                 pendingFile.write((char*)&prev,prev_ofst,sizeof(pending_order));
-//                auto* prev_ptr = pending_cache.get(prev_ofst);
-//                prev_ptr->nxt = pending_o->nxt;
-//                pending_cache.set_dirty_bit(prev_ofst);
             }
             auto backup=pending_o->nxt;
-//            pending_cache.remove(where);
             add_free_block(where);
             where = backup;
         } else {
@@ -97,12 +83,8 @@ void PendingTicketManager::add_pendingorder(pending_order* record, train* tra) {
         pendingFile.read((char*)&prev,tra->ticket_end,sizeof(pending_order));
         prev.nxt=allocated;
         pendingFile.write((char*)&prev,tra->ticket_end,sizeof(pending_order));
-//        auto* tmp = pending_cache.get(tra->ticket_end);
-//        tmp->nxt = allocated;
-//        pending_cache.set_dirty_bit(tra->ticket_end);
         tra->ticket_end = allocated;
     }
-//        pendingFile.seekp(pending_file_size);
     pendingFile.write((char*) record, allocated, sizeof(pending_order));
 }
 void PendingTicketManager::cancel_pending(int order_key,train* ptr) {
@@ -111,7 +93,6 @@ void PendingTicketManager::cancel_pending(int order_key,train* ptr) {
         pending_order po;
         pendingFile.read((char*)&po,where,sizeof(pending_order));
         auto* p=&po;
-//        auto* p = pending_cache.get(where);
         if (p->key == order_key) {
             //delete p
             if (where == ptr->ticket_head)ptr->ticket_head = p->nxt;
@@ -120,10 +101,6 @@ void PendingTicketManager::cancel_pending(int order_key,train* ptr) {
             pendingFile.read((char*)&prev,la,sizeof(pending_order));
             prev.nxt=p->nxt;
             pendingFile.write((char*)&prev,la,sizeof(pending_order));
-//            auto* la_p = pending_cache.get(la);
-//            la_p->nxt = p->nxt;
-//            pending_cache.set_dirty_bit(la);
-//            pending_cache.remove(where);
             add_free_block(where);
             break;
         }
