@@ -30,10 +30,10 @@ namespace cache{
             prev=ptr,next=ptr->next;
             next->prev= this,prev->next= this;
         }
-        _node_(){dirty_bit= false;}
-        ~_node_(){
-            data.~T();
-        }
+//        _node_(){dirty_bit= false;}
+//        ~_node_(){
+//            data.~T();
+//        }
     };
 
     template <typename DiskLoc_T,typename T>
@@ -45,6 +45,21 @@ namespace cache{
         ds::unordered_map<DiskLoc_T,node_ptr> cold_table;
         node_ptr hot_head,cold_head;
         size_t hot_max,cold_max;
+        node_ptr memory_pool;
+        node_ptr free_list_ptr;
+        node_ptr block_new(){
+            auto rt=free_list_ptr;
+//            free_list_ptr=(node_ptr)*((std::size_t*)free_list_ptr);
+            free_list_ptr=free_list_ptr->next;
+            rt->dirty_bit=false;
+            return rt;
+        }
+
+        void block_delete(node_ptr ptr){
+            ptr->data.~T();
+            ptr->next=free_list_ptr;
+            free_list_ptr=ptr;
+        }
 
         func_load_t<DiskLoc_T,T> f_load;
         func_expire_t<DiskLoc_T,T> f_expire;
@@ -55,10 +70,11 @@ namespace cache{
                 SLRUrater.dirty();
 #endif
             }
-            delete np;
+            block_delete(np);
         }
         node_ptr load(DiskLoc_T offset){
-            auto ptr=new _node_<DiskLoc_T,T>;
+//            auto ptr=new _node_<DiskLoc_T,T>;
+            auto ptr=block_new();
             f_load(offset,&ptr->data);
             ptr->offset=offset;
             return ptr;
@@ -79,14 +95,17 @@ namespace cache{
          * expire function is used to write a structure to offset(DiskLoc_T) in disk from space(T*) in memory
          */
 
-        SLRUCache(size_t size,func_load_t<DiskLoc_T,T> load_func, func_expire_t<DiskLoc_T,T> expire_func)
+        SLRUCache(size_t size,func_load_t<DiskLoc_T,T> load_func, func_expire_t<DiskLoc_T,T> expire_func,double ratio=0.625)
                 :  f_load(load_func), f_expire(expire_func){
             hot_head=(node_ptr)malloc(sizeof(_node_<DiskLoc_T,T>));
             cold_head=(node_ptr )malloc(sizeof(_node_<DiskLoc_T,T>));
             hot_head->next=hot_head->prev=hot_head;
             cold_head->prev=cold_head->next=cold_head;
-            hot_max=size/8*5;
+            hot_max=size*ratio;
             cold_max=size-hot_max;
+            memory_pool=(node_ptr)malloc(sizeof(_node_<DiskLoc_T,T>)*(size+1));
+            for(int i=0;i<size;++i)memory_pool[i].next=memory_pool+i+1;
+            free_list_ptr=memory_pool;
         }
 #ifndef NDEBUG
         Debug::CacheMissRater SLRUrater;
@@ -131,10 +150,17 @@ namespace cache{
                 hot_table[offset]=cur;
                 if(hot_table.size()>hot_max){
                     // hot overflow
-                    node_ptr dying=hot_head->prev;
-                    hot_table.erase(dying->offset);
-                    dying->detach();
-                    expire(dying);
+                    node_ptr move_out=hot_head->prev;
+                    move_out->detach();
+                    hot_table.erase(move_out->offset);
+                    move_out->attach(cold_head);
+                    cold_table[move_out->offset]=move_out;
+                    if(cold_table.size()>cold_max){
+                        node_ptr dying=cold_head->prev;
+                        cold_table.erase(dying->offset);
+                        dying->detach();
+                        expire(dying);
+                    }
                 }
                 return &(cur->data);
             } else{
@@ -169,6 +195,7 @@ namespace cache{
         void destruct(){
             expireAll(hot_head);
             expireAll(cold_head);
+            free(memory_pool);
         }
         ~SLRUCache() {
             // user must call destruct() manually.
