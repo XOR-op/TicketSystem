@@ -1,6 +1,6 @@
 
-#ifndef BPTREE_LRUBPTREE_H
-#define BPTREE_LRUBPTREE_H
+#ifndef BPTREE_SLRUBPTREE_H
+#define BPTREE_SLRUBPTREE_H
 
 #include <fstream>
 #include <cstring>
@@ -21,7 +21,7 @@ namespace bptree {
 
 
     template<typename KeyType, typename ValueType, typename WeakCmp=std::less<KeyType>>
-    class LRUBPTree : public BPTree<KeyType, ValueType,WeakCmp> {
+    class SLRUBPTree : public BPTree<KeyType, ValueType,WeakCmp> {
     private:
 //        static const size_t NO_FREE = SIZE_MAX;
         static const DiskLoc_T NO_FREE = DISKLOC_MAX;
@@ -29,7 +29,7 @@ namespace bptree {
         typedef const Node<KeyType,ValueType>* ConstNodePtr;
 
 
-        cache::LRUCache<DiskLoc_T ,Node<KeyType,ValueType>> cache;
+        cache::SLRUCache<DiskLoc_T ,Node<KeyType,ValueType>> cache;
 
         static void load(ds::File& ifs, DiskLoc_T offset, NodePtr tobe_filled);
 
@@ -49,17 +49,17 @@ namespace bptree {
         size_t file_size;
         DiskLoc_T freelist_head;
     public:
-        LRUBPTree(const std::string& path, size_t block_size,const WeakCmp& cmp=WeakCmp());
+        SLRUBPTree(const std::string& path, size_t block_size,const WeakCmp& cmp=WeakCmp());
 
         static void Init(const std::string& path);
 
-        ~LRUBPTree();
+        ~SLRUBPTree();
     };
 
 
 
     template<typename KeyType,typename ValueType, typename WeakCmp>
-    void LRUBPTree<KeyType, ValueType,WeakCmp>::flush(ds::File& ofs, ConstNodePtr node) {
+    void SLRUBPTree<KeyType, ValueType,WeakCmp>::flush(ds::File& ofs, ConstNodePtr node) {
         char buffer[Node<KeyType,ValueType>::BLOCK_SIZE];
         writeBuffer(node, buffer);
         ofs.seekp(node->offset);
@@ -69,7 +69,7 @@ namespace bptree {
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    void LRUBPTree<KeyType,ValueType,WeakCmp>::load(ds::File& ifs,DiskLoc_T offset, NodePtr tobe_filled) {
+    void SLRUBPTree<KeyType,ValueType,WeakCmp>::load(ds::File& ifs,DiskLoc_T offset, NodePtr tobe_filled) {
         char buffer[Node<KeyType,ValueType>::BLOCK_SIZE];
         ifs.seekg(offset);
         if (ifs.fail())throw std::runtime_error("CacheBPTree: Can't read");
@@ -79,7 +79,7 @@ namespace bptree {
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    Node<KeyType,ValueType>* LRUBPTree<KeyType,ValueType,WeakCmp>::initNode(typename bptree::Node<KeyType,ValueType>::type_t t) {
+    Node<KeyType,ValueType>* SLRUBPTree<KeyType,ValueType,WeakCmp>::initNode(typename bptree::Node<KeyType,ValueType>::type_t t) {
         typedef Node<KeyType,ValueType> Node;
         if (freelist_head == NO_FREE) {
             // extend file
@@ -103,18 +103,18 @@ namespace bptree {
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    void LRUBPTree<KeyType,ValueType,WeakCmp>::saveNode(NodePtr node) {
+    void SLRUBPTree<KeyType,ValueType,WeakCmp>::saveNode(NodePtr node) {
         cache.set_dirty_bit(node->offset);
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    Node<KeyType,ValueType>* LRUBPTree<KeyType,ValueType,WeakCmp>::loadNode(DiskLoc_T offset) {
+    Node<KeyType,ValueType>* SLRUBPTree<KeyType,ValueType,WeakCmp>::loadNode(DiskLoc_T offset) {
         return cache.get(offset);
     }
 
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    void LRUBPTree<KeyType,ValueType,WeakCmp>::deleteNode(NodePtr node) {
+    void SLRUBPTree<KeyType,ValueType,WeakCmp>::deleteNode(NodePtr node) {
         node->type = Node<KeyType,ValueType>::FREE;
         node->next = freelist_head;
         auto tmp = node->offset;
@@ -124,13 +124,13 @@ namespace bptree {
     }
 
     template <typename KeyType,typename ValueType,typename WeakCmp>
-    void LRUBPTree<KeyType,ValueType,WeakCmp>::Init(const std::string& path) {
+    void SLRUBPTree<KeyType,ValueType,WeakCmp>::Init(const std::string& path) {
         std::fstream f(path, ios::out | ios::binary);
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
-        char buf[sizeof(LRUBPTree<KeyType,ValueType>::file_size)+sizeof(LRUBPTree<KeyType,ValueType>::freelist_head)+sizeof(LRUBPTree<KeyType,ValueType>::root)];
+        char buf[sizeof(SLRUBPTree<KeyType,ValueType>::file_size)+sizeof(SLRUBPTree<KeyType,ValueType>::freelist_head)+sizeof(SLRUBPTree<KeyType,ValueType>::root)];
         char* ptr = buf;
         size_t size = sizeof(buf);
-        DiskLoc_T free = LRUBPTree<KeyType,ValueType>::NO_FREE;
+        DiskLoc_T free = SLRUBPTree<KeyType,ValueType>::NO_FREE;
         DiskLoc_T t = Node<KeyType,ValueType>::NONE;
         write_attribute(size);
         write_attribute(free);
@@ -143,7 +143,7 @@ namespace bptree {
 
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    LRUBPTree<KeyType,ValueType,WeakCmp>::LRUBPTree(const std::string& path, size_t block_size, const WeakCmp& cmp) :
+    SLRUBPTree<KeyType,ValueType,WeakCmp>::SLRUBPTree(const std::string& path, size_t block_size, const WeakCmp& cmp) :
             BPTree<KeyType,ValueType,WeakCmp>(cmp),
             cache(block_size, [this](DiskLoc_T o, NodePtr r) { load(file, o, r); }, [this](DiskLoc_T o,ConstNodePtr r) { flush(file, r); }) {
         file.open(path.c_str());
@@ -159,7 +159,7 @@ namespace bptree {
     }
 
     template<typename KeyType,typename ValueType,typename WeakCmp>
-    LRUBPTree<KeyType,ValueType,WeakCmp>::~LRUBPTree() {
+    SLRUBPTree<KeyType,ValueType,WeakCmp>::~SLRUBPTree() {
 #define write_attribute(ATTR) memcpy(ptr,(void*)&ATTR,sizeof(ATTR));ptr+=sizeof(ATTR)
         char buf[sizeof(file_size)+sizeof(freelist_head)+sizeof(this->root)];
         char* ptr = buf;
@@ -174,4 +174,4 @@ namespace bptree {
 #undef write_attribute
     }
 }
-#endif //BPTREE_LRUBPTREE_H
+#endif //BPTREE_SLRUBPTREE_H

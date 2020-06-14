@@ -165,7 +165,7 @@ int main() {
     // debug only
     cleanAll();
     for(int i=1;i<=10;++i) {
-        std::ifstream ifs("../testData/big/"+to_string(i)+".in");
+        std::ifstream ifs("../testData/pressure_3/"+to_string(i)+".in");
         cin.rdbuf(ifs.rdbuf());
         instance();
     }

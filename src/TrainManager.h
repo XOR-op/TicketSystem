@@ -10,6 +10,7 @@
 #include "PendingTicketManager.h"
 #include "../basic_component/SLRU.h"
 #include "../basic_component/LRUBPtree.h"
+#include "../basic_component/SLRUBPtree.h"
 #include "../include/vector.hpp"
 //using std::endl;
 namespace t_sys {
@@ -20,7 +21,7 @@ namespace t_sys {
         std::ostream& defaultOut;
         cache::SLRUCache<DiskLoc_T,train> train_cache;
         bptree::LRUBPTree<trainID_t,DiskLoc_T> trainidToOffset;
-        bptree::LRUBPTree<long long,int> stationTotrain; //long long = station_num+train_num, int = k-th station
+        bptree::SLRUBPTree<long long,int> stationTotrain; //long long = station_num+train_num, int = k-th station
         int train_num;//0-base
         int station_num;//1-base
         int ticket_num;//1-base
