@@ -645,7 +645,7 @@ TrainManager::Refund_ticket(UserManager* usr_manager, UserOrderManager* ord_mana
 TrainManager::TrainManager(const std::string& file_path, const std::string& trainid_index_path,
                            const std::string& station_index_path, const std::string& train_info_path,
                            const std::string& station_info_path, const std::string& offset_info_path)
-        : train_cache(403, [this](DiskLoc_T off, train* tra) {
+        : train_cache(353, [this](DiskLoc_T off, train* tra) {
                           assert(trainFile.good());
                           loadTrain(trainFile, off, tra);
                       },
@@ -657,7 +657,6 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
           stationTotrain(station_index_path, 107),
           defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path),
           offset_info_path(offset_info_path) {
-    // todo fix head because it doesn't work on file yet.
     trainFile.open(file_path);
     //metadata
     char buf[sizeof(train_file_size)+sizeof(int)*3];
