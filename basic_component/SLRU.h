@@ -103,8 +103,8 @@ namespace cache{
             cold_head->prev=cold_head->next=cold_head;
             hot_max=size*ratio;
             cold_max=size-hot_max;
-            memory_pool=(node_ptr)malloc(sizeof(_node_<DiskLoc_T,T>)*(size+1));
-            for(int i=0;i<size;++i)memory_pool[i].next=memory_pool+i+1;
+            memory_pool=(node_ptr)malloc(sizeof(_node_<DiskLoc_T,T>)*(size));
+            for(int i=0;i<size-1;++i)memory_pool[i].next=memory_pool+i+1;
             free_list_ptr=memory_pool;
         }
 #ifndef NDEBUG
@@ -143,40 +143,40 @@ namespace cache{
 #ifndef NDEBUG
                 SLRUrater.cold();
 #endif
-                node_ptr cur=iter->second;
-                cur->detach();
-                cold_table.erase(offset);
-                cur->attach(hot_head);
-                hot_table[offset]=cur;
-                if(hot_table.size()>hot_max){
+                if(hot_table.size()>=hot_max){
                     // hot overflow
-                    node_ptr move_out=hot_head->prev;
-                    move_out->detach();
-                    hot_table.erase(move_out->offset);
-                    move_out->attach(cold_head);
-                    cold_table[move_out->offset]=move_out;
-                    if(cold_table.size()>cold_max){
+                    if(cold_table.size()>=cold_max){
                         node_ptr dying=cold_head->prev;
                         cold_table.erase(dying->offset);
                         dying->detach();
                         expire(dying);
                     }
+                    node_ptr move_out=hot_head->prev;
+                    move_out->detach();
+                    hot_table.erase(move_out->offset);
+                    move_out->attach(cold_head);
+                    cold_table[move_out->offset]=move_out;
                 }
+                node_ptr cur=iter->second;
+                cur->detach();
+                cold_table.erase(offset);
+                cur->attach(hot_head);
+                hot_table[offset]=cur;
                 return &(cur->data);
             } else{
                 // not in cache
 #ifndef NDEBUG
                 SLRUrater.miss();
 #endif
-                node_ptr cur=load(offset);
-                cur->attach(cold_head);
-                cold_table[offset]=cur;
-                if(cold_table.size()>cold_max){
+                if(cold_table.size()>=cold_max){
                     node_ptr dying=cold_head->prev;
                     cold_table.erase(dying->offset);
                     dying->detach();
                     expire(dying);
                 }
+                node_ptr cur=load(offset);
+                cur->attach(cold_head);
+                cold_table[offset]=cur;
                 return &(cur->data);
             }
         }

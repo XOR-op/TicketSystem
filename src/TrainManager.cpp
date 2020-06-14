@@ -653,7 +653,7 @@ TrainManager::TrainManager(const std::string& file_path, const std::string& trai
                           assert(trainFile.good());
                           saveTrain(trainFile, off, tra);
                       },0.2),
-          trainidToOffset(trainid_index_path, 87),
+          trainidToOffset(trainid_index_path, 83),
           stationTotrain(station_index_path, 127),
           defaultOut(std::cout), train_info_path(train_info_path), station_info_path(station_info_path),
           offset_info_path(offset_info_path) {
