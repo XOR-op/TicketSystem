@@ -2,7 +2,7 @@
 
 ## 整体架构
 
-![](./assets/project structure.png)
+![avatar](./assets/project_structure.png)
 
 ## 缓存设计
 
@@ -113,7 +113,7 @@
 
 ## 文件用途
 
-- offset.dat: `TrainManager::trainOffset 序列化对象
+- offset.dat: `TrainManager::trainOffset` 序列化对象
 - order_manager.db: 所有用户的订单信息
 - pending.db: 候补信息
 - station.dat: `TrainManager::stationlist` 序列化对象
