@@ -6,7 +6,7 @@
 
 ## 缓存设计
 
-### train_cache::LRUCache
+### train_cache::LRU（SLRU）
 
 设计时参照了mmap的思路，将文件的对应位置的块直接映射至内存中，依赖于人工调用的dirty_bit_set()实现写入一致性
 
@@ -22,7 +22,7 @@
 
 手动设置块对应的dirty_bit
 
-#### t_sys::PageManager
+### t_sys::PageManager
 
 以页为单位的缓存，从磁盘读入时需内存复制两次，因此效率不及LRUCache，但优势在于容易使用
 
