@@ -1,0 +1,25 @@
+digraph G {
+    BPTree[shape="box"]
+    PageManager[shape="box"]
+    LRUCache[shape="box",label="(S)LRUCache"]
+    LRUBPTree[shape="box",label="(S)LRUBPTree"]
+    Main[shape="box"]
+    BPTree->LRUBPTree
+    LRUCache->LRUBPTree
+    LRUCache->PageManager
+    UserManager
+    TrainManager
+    PendingOrderManager
+    UserOrderManager
+    LRUCache->UserManager
+    LRUBPTree->UserManager
+    LRUCache->TrainManager
+    LRUBPTree->TrainManager
+    LRUCache->UserOrderManager
+    PageManager->PendingOrderManager
+    UserManager->Main
+    UserOrderManager->Main
+    TrainManager->Main
+    PendingOrderManager->Main
+    
+}
