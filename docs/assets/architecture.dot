@@ -1,0 +1,8 @@
+digraph G{
+    // rankdir=LR
+    Executable[shape="box"]
+    Flask[shape="box"]
+    WebPage[shape="box"]
+    Executable->Flask[label="unix pipe(non-blocking)",dir=both]
+    Flask->WebPage[dir=both,label="http"]
+}

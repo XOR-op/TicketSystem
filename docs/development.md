@@ -2,7 +2,13 @@
 
 ## 整体架构
 
+### Backend
+
 ![avatar](./assets/project_structure.png)
+
+### Project
+
+![avatar](./assets/architecture.png)
 
 ## 缓存设计
 
@@ -34,9 +40,11 @@
 
 将src指向的size大小数据写入offset对应的磁盘地址中
 
+### 缓存大小
 
+根据实际需求进行fine tune
 
-## 类架构
+## 数据成员
 
 ### LRUBPTree
 
@@ -80,14 +88,6 @@
 
 变长构造，每次根据stationNum进行不同的读取和写入操作
 
-##### Add_train()
-
-对列车时间、价格进行前缀和处理
-
-##### Query_train()
-
-枚举经过始发站的列车1,经过终点站的列车2,检测是否有交集，有交集且合法则加入比较
-
 ### UserOrderManager
 
 块状链表优化
@@ -110,6 +110,33 @@
 ##### allocate_tickets()
 
 遍历候补队列，依次使满足条件的order状态变为success
+
+## 操作说明
+
+### UserManager
+
+- Add_user: 添加用户至用户信息
+- Login: 用户未登录时执行登录
+- logout: 登出
+- Query_profile: 查询信息
+- Modify_profile: 修改信息，具有原子性
+- Query_order: 调用UserOrderManager查询订单信息
+
+### TrainManager
+
+- Add_train: 添加信息，对列车时间、价格进行前缀和处理
+- Delete_train: 删除列车
+- Release_train: 发布列车，对票数进行初始化
+- Query_train: 查询列车信息
+- Query_ticket: 枚举经过两个站的列车，取交集
+- Query_transfer: 枚举经过始发站的列车1,经过终点站的列车2,检测是否有共同的站点，有交集且合法则加入比较
+- Buy_ticket: 购票，并更新UserManager，UserOrderManager及PendingTicketManager信息
+- Refund_ticket: 退票，并调用PendingOrderManager尝试匹配候补订单
+
+### Misc
+
+- clean: 删除所有文件，对内存对象进行析构
+- exit: 正常析构退出
 
 ## 文件用途
 
