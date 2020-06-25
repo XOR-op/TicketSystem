@@ -44,9 +44,11 @@
 
 根据实际需求进行fine tune
 
-## 数据成员
+## 模块成员及功能
 
 ### LRUBPTree
+
+BPT with cache
 
 ##### metadata
 
@@ -70,12 +72,16 @@
 
 ### UserManager
 
+处理user相关请求
+
 | 字段      | 描述              |
 | --------- | ----------------- |
 | file_size | -                 |
 | is_null   | 是否size(用户)==0 |
 
 ### TrainManager
+
+处理train&ticket相关请求
 
 | 字段            | 描述                          |
 | --------------- | ----------------------------- |
@@ -90,6 +96,8 @@
 
 ### UserOrderManager
 
+处理user order相关请求
+
 块状链表优化
 
 ##### __order_block
@@ -101,6 +109,8 @@
 | data | size个order         |
 
 ### PendingOrderManager
+
+处理候补队列
 
 | 字段          | 描述                 |
 | ------------- | -------------------- |
